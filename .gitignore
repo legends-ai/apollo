@@ -1,4 +1,3 @@
-
 # Created by https://www.gitignore.io/api/go
 
 ### Go ###
@@ -28,3 +27,4 @@ _testmain.go
 *.prof
 
 /gen-go
+/apollo

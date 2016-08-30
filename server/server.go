@@ -6,12 +6,20 @@ import (
 	"google.golang.org/grpc/codes"
 
 	apb "github.com/simplyianm/apollo/gen-go/apollo"
+	"github.com/simplyianm/apollo/models"
 )
 
-type Server struct{}
+type Server struct {
+	Champions *models.ChampionDAO `inject:"t"`
+}
 
 func (s *Server) GetChampion(ctx context.Context, in *apb.GetChampionRequest) (*apb.Champion, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "GetChampion unimplemented")
+	champion, err := s.Champions.Get(ctx, in)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Internal, "could not get champion: %v", err)
+	}
+
+	return champion, nil
 }
 
 func (s *Server) GetMatchup(ctx context.Context, in *apb.GetMatchupRequest) (*apb.Matchup, error) {
