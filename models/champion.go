@@ -12,6 +12,10 @@ type ChampionDAO struct{}
 // Get gets a champion.
 func (dao *ChampionDAO) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
 	return &apb.Champion{
-		Metadata: &apb.Champion_Metadata{},
+		Metadata: &apb.Champion_Metadata{
+			StaticInfo: &apb.ChampionStatic{
+				Id: uint32(64),
+			},
+		},
 	}, nil
 }
