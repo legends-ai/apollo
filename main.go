@@ -13,7 +13,7 @@ import (
 	"github.com/simplyianm/apollo/lib"
 	"github.com/simplyianm/apollo/server"
 
-	apb "github.com/simplyianm/apollo/gen-go/apollo"
+	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
 func main() {

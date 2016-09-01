@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	apb "github.com/simplyianm/apollo/gen-go/apollo"
+	apb "github.com/simplyianm/apollo/gen-go/asuna"
 	"github.com/simplyianm/apollo/models"
 )
 
