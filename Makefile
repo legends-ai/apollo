@@ -11,3 +11,7 @@ genproto:
 
 syncproto:
 	cd proto && git pull origin master
+
+install:
+	git submodule update --init
+	glide install

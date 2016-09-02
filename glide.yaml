@@ -1,0 +1,15 @@
+package: github.com/simplyianm/apollo
+import:
+- package: github.com/Sirupsen/logrus
+- package: github.com/golang/protobuf
+  subpackages:
+  - proto
+  - ptypes/timestamp
+- package: github.com/kelseyhightower/envconfig
+- package: github.com/simplyianm/inject
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: google.golang.org/grpc
+  subpackages:
+  - codes

@@ -28,3 +28,4 @@ _testmain.go
 
 /gen-go
 /apollo
+/vendor
