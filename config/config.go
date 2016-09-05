@@ -8,7 +8,9 @@ import (
 
 // AppConfig represents the application config
 type AppConfig struct {
-	Port int `required:"true" default:"4834"`
+	Port       int      `required:"true" default:"4834"`
+	DBHost     []string `default:"127.0.0.1"`
+	DBKeyspace string   `default:"athena"`
 }
 
 // Initialize initializes the configuration from env vars

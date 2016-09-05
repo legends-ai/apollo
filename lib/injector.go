@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gocql/gocql"
 	"github.com/simplyianm/apollo/config"
 	"github.com/simplyianm/apollo/models"
 	"github.com/simplyianm/inject"
@@ -24,6 +25,15 @@ func NewInjector() inject.Injector {
 	if err != nil {
 		log.Fatalf("Could not inject ChampionDAO: %v", err)
 	}
+
+	cluster := gocql.NewCluster(cfg.DBHost...)
+	cluster.Keyspace = cfg.DBKeyspace
+	cluster.Consistency = gocql.Quorum
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Fatalf("Could not connect to Cassandra: %v", err)
+	}
+	injector.Map(session)
 
 	return injector
 }

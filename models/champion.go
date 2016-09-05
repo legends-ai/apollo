@@ -1,11 +1,12 @@
 package models
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/golang/protobuf/ptypes"
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 	"golang.org/x/net/context"
-	"math/rand"
-	"time"
 )
 
 // ChampionDAO is a Champion DAO.
@@ -21,11 +22,13 @@ func (dao *ChampionDAO) Get(ctx context.Context, req *apb.GetChampionRequest) (*
 
 	return &apb.Champion{
 		Metadata: &apb.Champion_Metadata{
-			StaticInfo: &apb.ChampionInfo{
-				Id:    uint32(64),
-				Title: "The Blind Monk",
-				Name:  "Lee Sin",
-				Key:   "LeeSin",
+			StaticInfo: &apb.Vulgate_Champion{
+				Base: &apb.Vulgate_Champion_Base{
+					Id:    uint32(64),
+					Title: "The Blind Monk",
+					Name:  "Lee Sin",
+					Key:   "LeeSin",
+				},
 			},
 			PatchStart: patchStart,
 			PatchEnd:   patchEnd,
@@ -48,40 +51,42 @@ func (dao *ChampionDAO) Get(ctx context.Context, req *apb.GetChampionRequest) (*
 				},
 			},
 			Statistics: &apb.MatchAggregateStatistics{
-				WinRate:                  generateRandomStatistic(total),
-				PickRate:                 generateRandomStatistic(total),
-				BanRate:                  generateRandomStatistic(total),
-				GamesPlayed:              generateRandomStatistic(total),
-				GoldEarned:               generateRandomStatistic(total),
-				Kills:                    generateRandomStatistic(total),
-				Deaths:                   generateRandomStatistic(total),
-				Assists:                  generateRandomStatistic(total),
-				DamageDealt:              generateRandomStatistic(total),
-				DamageTaken:              generateRandomStatistic(total),
-				MinionsKilled:            generateRandomStatistic(total),
-				TeamJungleMinionsKilled:  generateRandomStatistic(total),
-				EnemyJungleMinionsKilled: generateRandomStatistic(total),
-				StructureDamage:          generateRandomStatistic(total),
-				KillingSpree:             generateRandomStatistic(total),
-				WardsBought:              generateRandomStatistic(total),
-				WardsPlaced:              generateRandomStatistic(total),
-				WardsKilled:              generateRandomStatistic(total),
-				CrowdControl:             generateRandomStatistic(total),
-				FirstBlood:               generateRandomStatistic(total),
-				FirstBloodAssist:         generateRandomStatistic(total),
-				CsDiff:                   generateRandomDelta(total),
-				XpDiff:                   generateRandomDelta(total),
-				DamageTakenDiff:          generateRandomDelta(total),
-				XpPerMin:                 generateRandomDelta(total),
-				GoldPerMin:               generateRandomDelta(total),
-				TowersPerMin:             generateRandomDelta(total),
-				WardsPerMin:              generateRandomDelta(total),
-				DamageTakenPerMin:        generateRandomDelta(total),
-				MultikillStats: &apb.MatchAggregateStatistics_MultikillStats{
-					DoubleKill: generateRandomStatistic(total),
-					TripleKill: generateRandomStatistic(total),
-					QuadraKill: generateRandomStatistic(total),
-					PentaKill:  generateRandomStatistic(total),
+				Scalars: &apb.MatchAggregateStatistics_Scalars{
+					WinRate:                  generateRandomStatistic(total),
+					PickRate:                 generateRandomStatistic(total),
+					BanRate:                  generateRandomStatistic(total),
+					GamesPlayed:              generateRandomStatistic(total),
+					GoldEarned:               generateRandomStatistic(total),
+					Kills:                    generateRandomStatistic(total),
+					Deaths:                   generateRandomStatistic(total),
+					Assists:                  generateRandomStatistic(total),
+					DamageDealt:              generateRandomStatistic(total),
+					DamageTaken:              generateRandomStatistic(total),
+					MinionsKilled:            generateRandomStatistic(total),
+					TeamJungleMinionsKilled:  generateRandomStatistic(total),
+					EnemyJungleMinionsKilled: generateRandomStatistic(total),
+					StructureDamage:          generateRandomStatistic(total),
+					KillingSpree:             generateRandomStatistic(total),
+					WardsBought:              generateRandomStatistic(total),
+					WardsPlaced:              generateRandomStatistic(total),
+					WardsKilled:              generateRandomStatistic(total),
+					CrowdControl:             generateRandomStatistic(total),
+					FirstBlood:               generateRandomStatistic(total),
+					FirstBloodAssist:         generateRandomStatistic(total),
+					DoubleKills:              generateRandomStatistic(total),
+					TripleKills:              generateRandomStatistic(total),
+					Quadrakills:              generateRandomStatistic(total),
+					Pentakills:               generateRandomStatistic(total),
+				},
+				Deltas: &apb.MatchAggregateStatistics_Deltas{
+					CsDiff:          generateRandomDelta(total),
+					XpDiff:          generateRandomDelta(total),
+					DamageTakenDiff: generateRandomDelta(total),
+					XpPerMin:        generateRandomDelta(total),
+					GoldPerMin:      generateRandomDelta(total),
+					TowersPerMin:    generateRandomDelta(total),
+					WardsPlaced:     generateRandomDelta(total),
+					DamageTaken:     generateRandomDelta(total),
 				},
 			},
 			Graphs: &apb.MatchAggregateGraphs{
@@ -172,8 +177,8 @@ func generateRandomStatistic(num int32) *apb.MatchAggregateStatistics_Statistic 
 	}
 }
 
-func generateRandomDelta(num int32) *apb.MatchAggregateStatistics_Delta {
-	return &apb.MatchAggregateStatistics_Delta{
+func generateRandomDelta(num int32) *apb.MatchAggregateStatistics_Deltas_Delta {
+	return &apb.MatchAggregateStatistics_Deltas_Delta{
 		ZeroToTen:      generateRandomStatistic(num),
 		TenToTwenty:    generateRandomStatistic(num),
 		TwentyToThirty: generateRandomStatistic(num),
