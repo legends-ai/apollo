@@ -23,10 +23,33 @@ type Aggregator struct {
 	CQL *gocql.Session
 }
 
-// GenerateAggregate generates an aggregate for a champion.
-func (a *Aggregator) AggregateFromFilters(filters []*apb.MatchFilters) (*apb.MatchAggregate, error) {
+// Aggregate derives a MatchAggregate from two sets of filters:
+// - Base, the base stats to compare against
+// - Filters, the filters to compare the specifics against
+func (a *Aggregator) Aggregate(
+	base []*apb.MatchFilters, filters []*apb.MatchFilters,
+) (*apb.MatchAggregate, error) {
+	baseSum, err := a.Sum(base)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching base sum: %v", err)
+	}
+
+	filtersSum, err := a.Sum(filters)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching filters sum: %v", err)
+	}
+
+	aggregate := buildAggregate(baseSum, filtersSum)
+	return aggregate, nil
+}
+
+// Sum derives a sum from a set of filters.
+func (a *Aggregator) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 	// Channel containing sums
 	sumsChan := make(chan *apb.MatchSum)
+
+	// Error from fetching aggregates
+	var fetchErr error = nil
 
 	// Concurrently fetch all sums
 	var wg sync.WaitGroup
@@ -37,7 +60,14 @@ func (a *Aggregator) AggregateFromFilters(filters []*apb.MatchFilters) (*apb.Mat
 
 		// Asynchronous get
 		go func(filter *apb.MatchFilters) {
-			sumsChan <- a.fetchSum(filter)
+			// Error handling
+			s, err := a.fetchSum(filter)
+			if err != nil {
+				fetchErr = err
+			}
+
+			// Process sum
+			sumsChan <- s
 			wg.Done()
 		}(filter)
 	}
@@ -54,7 +84,8 @@ func (a *Aggregator) AggregateFromFilters(filters []*apb.MatchFilters) (*apb.Mat
 	wg.Wait()
 	close(sumsChan)
 
-	return buildAggregate(sum)
+	// Return sum and error
+	return sum, fetchErr
 }
 
 func (a *Aggregator) fetchSum(f *apb.MatchFilters) (*apb.MatchSum, error) {
@@ -79,6 +110,7 @@ func addSums(a, b *apb.MatchSum) *apb.MatchSum {
 	return a
 }
 
-func buildAggregate(sum *apb.MatchSum) (*apb.MatchAggregate, error) {
-	return nil, nil
+func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggregate {
+	// TODO(igm): implement
+	return &apb.MatchAggregate{}
 }
