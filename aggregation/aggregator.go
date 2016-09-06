@@ -112,5 +112,37 @@ func addSums(a, b *apb.MatchSum) *apb.MatchSum {
 
 func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggregate {
 	// TODO(igm): implement
-	return &apb.MatchAggregate{}
+	return &apb.MatchAggregate{
+		Statistics: &apb.MatchAggregateStatistics{
+			WinRate:                  makeStatistic(float64(filtered.Wins) / filtered.Plays),
+			GamesPlayed:              makeStatistic(float64(filtered.Plays)),
+			GoldEarned:               makeStatistic(float64(filtered.GoldEarned) / filtered.Plays),
+			Kills:                    makeStatistic(float64(filtered.Kills) / filtered.Plays),
+			Deaths:                   makeStatistic(float64(filtered.Deaths) / filtered.Plays),
+			Assists:                  makeStatistic(float64(filtered.Assists) / filtered.Plays),
+			DamageDealt:              makeStatistic(float64(filtered.DamageDealt) / filtered.Plays),
+			DamageTaken:              makeStatistic(float64(filtered.DamageTaken) / filtered.Plays),
+			MinionsKilled:            makeStatistic(float64(filtered.MinionsKilled) / filtered.Plays),
+			TeamJungleMinionsKilled:  makeStatistic(float64(filtered.TeamJungleMinionsKilled) / filtered.Plays),
+			EnemyJungleMinionsKilled: makeStatistic(float64(filtered.EnemyJungleMinionsKilled) / filtered.Plays),
+			StructureDamage:          makeStatistic(float64(filtered.StructureDamage) / filtered.Plays),
+			KillingSpree:             makeStatistic(float64(filtered.KillingSpree) / filtered.Plays),
+			WardsBought:              makeStatistic(float64(filtered.WardsBought) / filtered.Plays),
+			WardsPlaced:              makeStatistic(float64(filtered.WardsPlaced) / filtered.Plays),
+			CrowdControl:             makeStatistic(float64(filtered.CrowdControl) / filtered.Plays),
+			FirstBlood:               makeStatistic(float64(filtered.FirstBlood) / filtered.Plays),
+			FirstBloodAssist:         makeStatistic(float64(filtered.FirstBloodAssist) / filtered.Plays),
+			DoubleKills:              makeStatistic(float64(filtered.DoubleKills) / filtered.Plays),
+			TripleKills:              makeStatistic(float64(filtered.TripleKills) / filtered.Plays),
+			Quadrakills:              makeStatistic(float64(filtered.Quadrakills) / filtered.Plays),
+			Pentakills:               makeStatistic(float64(filtered.Pentakills) / filtered.Plays),
+		},
+	}
+}
+
+func makeStatistic(val float64) *apb.MatchAggregateStatistics_Statistic {
+	// TODO(igm): implement rank, change, average, percentile. Cache?
+	return &apb.MatchAggregateStatistics_Statistic{
+		Value: val,
+	}
 }
