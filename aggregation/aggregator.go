@@ -20,7 +20,7 @@ const (
 
 // Aggregator aggregates sums and derives aggregates.
 type Aggregator struct {
-	CQL *gocql.Session
+	CQL *gocql.Session `inject:"t"`
 }
 
 // Aggregate derives a MatchAggregate from two sets of filters:
@@ -148,30 +148,33 @@ func sanitizeMatchSum(p *apb.MatchSum) {
 
 func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggregate {
 	// TODO(igm): implement
+	scalars := filtered.Scalars
 	return &apb.MatchAggregate{
 		Statistics: &apb.MatchAggregateStatistics{
-			WinRate:                  makeStatistic(float64(filtered.Wins) / filtered.Plays),
-			GamesPlayed:              makeStatistic(float64(filtered.Plays)),
-			GoldEarned:               makeStatistic(float64(filtered.GoldEarned) / filtered.Plays),
-			Kills:                    makeStatistic(float64(filtered.Kills) / filtered.Plays),
-			Deaths:                   makeStatistic(float64(filtered.Deaths) / filtered.Plays),
-			Assists:                  makeStatistic(float64(filtered.Assists) / filtered.Plays),
-			DamageDealt:              makeStatistic(float64(filtered.DamageDealt) / filtered.Plays),
-			DamageTaken:              makeStatistic(float64(filtered.DamageTaken) / filtered.Plays),
-			MinionsKilled:            makeStatistic(float64(filtered.MinionsKilled) / filtered.Plays),
-			TeamJungleMinionsKilled:  makeStatistic(float64(filtered.TeamJungleMinionsKilled) / filtered.Plays),
-			EnemyJungleMinionsKilled: makeStatistic(float64(filtered.EnemyJungleMinionsKilled) / filtered.Plays),
-			StructureDamage:          makeStatistic(float64(filtered.StructureDamage) / filtered.Plays),
-			KillingSpree:             makeStatistic(float64(filtered.KillingSpree) / filtered.Plays),
-			WardsBought:              makeStatistic(float64(filtered.WardsBought) / filtered.Plays),
-			WardsPlaced:              makeStatistic(float64(filtered.WardsPlaced) / filtered.Plays),
-			CrowdControl:             makeStatistic(float64(filtered.CrowdControl) / filtered.Plays),
-			FirstBlood:               makeStatistic(float64(filtered.FirstBlood) / filtered.Plays),
-			FirstBloodAssist:         makeStatistic(float64(filtered.FirstBloodAssist) / filtered.Plays),
-			Doubleills:               makeStatistic(float64(filtered.DoubleKills) / filtered.Plays),
-			Triplekills:              makeStatistic(float64(filtered.TripleKills) / filtered.Plays),
-			Quadrakills:              makeStatistic(float64(filtered.Quadrakills) / filtered.Plays),
-			Pentakills:               makeStatistic(float64(filtered.Pentakills) / filtered.Plays),
+			Scalars: &apb.MatchAggregateStatistics_Scalars{
+				WinRate:                  makeStatistic(float64(scalars.Wins) / float64(scalars.Plays)),
+				GamesPlayed:              makeStatistic(float64(scalars.Plays)),
+				GoldEarned:               makeStatistic(float64(scalars.GoldEarned) / float64(scalars.Plays)),
+				Kills:                    makeStatistic(float64(scalars.Kills) / float64(scalars.Plays)),
+				Deaths:                   makeStatistic(float64(scalars.Deaths) / float64(scalars.Plays)),
+				Assists:                  makeStatistic(float64(scalars.Assists) / float64(scalars.Plays)),
+				DamageDealt:              makeStatistic(float64(scalars.DamageDealt) / float64(scalars.Plays)),
+				DamageTaken:              makeStatistic(float64(scalars.DamageTaken) / float64(scalars.Plays)),
+				MinionsKilled:            makeStatistic(float64(scalars.MinionsKilled) / float64(scalars.Plays)),
+				TeamJungleMinionsKilled:  makeStatistic(float64(scalars.TeamJungleMinionsKilled) / float64(scalars.Plays)),
+				EnemyJungleMinionsKilled: makeStatistic(float64(scalars.EnemyJungleMinionsKilled) / float64(scalars.Plays)),
+				StructureDamage:          makeStatistic(float64(scalars.StructureDamage) / float64(scalars.Plays)),
+				KillingSpree:             makeStatistic(float64(scalars.KillingSpree) / float64(scalars.Plays)),
+				WardsBought:              makeStatistic(float64(scalars.WardsBought) / float64(scalars.Plays)),
+				WardsPlaced:              makeStatistic(float64(scalars.WardsPlaced) / float64(scalars.Plays)),
+				CrowdControl:             makeStatistic(float64(scalars.CrowdControl) / float64(scalars.Plays)),
+				FirstBlood:               makeStatistic(float64(scalars.FirstBlood) / float64(scalars.Plays)),
+				FirstBloodAssist:         makeStatistic(float64(scalars.FirstBloodAssist) / float64(scalars.Plays)),
+				DoubleKills:              makeStatistic(float64(scalars.Doublekills) / float64(scalars.Plays)),
+				TripleKills:              makeStatistic(float64(scalars.Triplekills) / float64(scalars.Plays)),
+				Quadrakills:              makeStatistic(float64(scalars.Quadrakills) / float64(scalars.Plays)),
+				Pentakills:               makeStatistic(float64(scalars.Pentakills) / float64(scalars.Plays)),
+			},
 		},
 	}
 }

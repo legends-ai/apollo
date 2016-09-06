@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gocql/gocql"
+	"github.com/simplyianm/apollo/aggregation"
 	"github.com/simplyianm/apollo/config"
 	"github.com/simplyianm/apollo/models"
 	"github.com/simplyianm/inject"
@@ -34,6 +35,9 @@ func NewInjector() inject.Injector {
 		log.Fatalf("Could not connect to Cassandra: %v", err)
 	}
 	injector.Map(session)
+
+	// Setup aggregator
+	injector.ApplyMap(&aggregation.Aggregator{})
 
 	return injector
 }
