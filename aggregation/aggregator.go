@@ -44,6 +44,43 @@ func (a *Aggregator) fetchRow(f *apb.MatchFilters) (*apb.MatchSum, error) {
 }
 
 func addSums(a, b *apb.MatchSum) *apb.MatchSum {
-	// TODO(igm): add sums
-	return a
+
+	return &apb.MatchSum{
+		Scalars: &apb.MatchSum_Scalars{
+			Plays:                    a.Scalars.Plays + b.Scalars.Plays,
+			Wins:                     a.Scalars.Wins + b.Scalars.Wins,
+			GoldEarned:               a.Scalars.GoldEarned + b.Scalars.GoldEarned,
+			Kills:                    a.Scalars.Kills + b.Scalars.Kills,
+			Deaths:                   a.Scalars.Deaths + b.Scalars.Deaths,
+			Assists:                  a.Scalars.Assists + b.Scalars.Assists,
+			DamageDealt:              a.Scalars.DamageDealt + b.Scalars.DamageDealt,
+			MinionsKilled:            a.Scalars.MinionsKilled + b.Scalars.MinionsKilled,
+			TeamJungleMinionsKilled:  a.Scalars.TeamJungleMinionsKilled + b.Scalars.TeamJungleMinionsKilled,
+			EnemyJungleMinionsKilled: a.Scalars.EnemyJungleMinionsKilled + b.Scalars.EnemyJungleMinionsKilled,
+			StructureDamage:          a.Scalars.StructureDamage + b.Scalars.StructureDamage,
+			KillingSpree:             a.Scalars.KillingSpree + b.Scalars.KillingSpree,
+			WardsBought:              a.Scalars.WardsBought + b.Scalars.WardsBought,
+			WardsPlaced:              a.Scalars.WardsPlaced + b.Scalars.WardsPlaced,
+			WardsKilled:              a.Scalars.WardsKilled + b.Scalars.WardsKilled,
+			CrowdControl:             a.Scalars.CrowdControl + b.Scalars.CrowdControl,
+			FirstBlood:               a.Scalars.FirstBlood + b.Scalars.FirstBlood,
+			FirstBloodAssist:         a.Scalars.FirstBloodAssist + b.Scalars.FirstBloodAssist,
+			Doublekills:              a.Scalars.Doublekills + b.Scalars.Doublekills,
+			Triplekills:              a.Scalars.Triplekills + b.Scalars.Triplekills,
+			Quadrakills:              a.Scalars.Quadrakills + b.Scalars.Quadrakills,
+			Pentakills:               a.Scalars.Pentakills + b.Scalars.Pentakills,
+		},
+	}
+}
+
+func sanitizeMatchSum(p *apb.MatchSum) *apb.MatchSum {
+	if p.Scalars == nil {
+		p.Scalars = &apb.MatchSum_Scalars{}
+	}
+
+	if p.Deltas == nil {
+		p.Deltas = &apb.MatchSum_Deltas{}
+	}
+
+	return p
 }
