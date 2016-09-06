@@ -106,7 +106,8 @@ func (a *Aggregator) fetchSum(f *apb.MatchFilters) (*apb.MatchSum, error) {
 }
 
 func addSums(a, b *apb.MatchSum) *apb.MatchSum {
-
+	sanitizeMatchSum(a)
+	sanitizeMatchSum(b)
 	return &apb.MatchSum{
 		Scalars: &apb.MatchSum_Scalars{
 			Plays:                    a.Scalars.Plays + b.Scalars.Plays,
@@ -135,7 +136,7 @@ func addSums(a, b *apb.MatchSum) *apb.MatchSum {
 	}
 }
 
-func sanitizeMatchSum(p *apb.MatchSum) *apb.MatchSum {
+func sanitizeMatchSum(p *apb.MatchSum) {
 	if p.Scalars == nil {
 		p.Scalars = &apb.MatchSum_Scalars{}
 	}
@@ -143,8 +144,6 @@ func sanitizeMatchSum(p *apb.MatchSum) *apb.MatchSum {
 	if p.Deltas == nil {
 		p.Deltas = &apb.MatchSum_Deltas{}
 	}
-
-	return p
 }
 
 func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggregate {
@@ -169,8 +168,8 @@ func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggreg
 			CrowdControl:             makeStatistic(float64(filtered.CrowdControl) / filtered.Plays),
 			FirstBlood:               makeStatistic(float64(filtered.FirstBlood) / filtered.Plays),
 			FirstBloodAssist:         makeStatistic(float64(filtered.FirstBloodAssist) / filtered.Plays),
-			DoubleKills:              makeStatistic(float64(filtered.DoubleKills) / filtered.Plays),
-			TripleKills:              makeStatistic(float64(filtered.TripleKills) / filtered.Plays),
+			Doubleills:               makeStatistic(float64(filtered.DoubleKills) / filtered.Plays),
+			Triplekills:              makeStatistic(float64(filtered.TripleKills) / filtered.Plays),
 			Quadrakills:              makeStatistic(float64(filtered.Quadrakills) / filtered.Plays),
 			Pentakills:               makeStatistic(float64(filtered.Pentakills) / filtered.Plays),
 		},
