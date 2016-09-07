@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	Champions *models.ChampionDAO `inject:"t"`
+	Champions models.ChampionDAO `inject:"t"`
 }
 
 func (s *Server) GetChampion(ctx context.Context, in *apb.GetChampionRequest) (*apb.Champion, error) {

@@ -22,7 +22,7 @@ func NewInjector() inject.Injector {
 	cfg := config.Initialize()
 	injector.Map(cfg)
 
-	_, err := injector.ApplyMap(&models.ChampionDAO{})
+	_, err := injector.ApplyMap(&models.MockChampionDAO{})
 	if err != nil {
 		log.Fatalf("Could not inject ChampionDAO: %v", err)
 	}
@@ -37,7 +37,7 @@ func NewInjector() inject.Injector {
 	injector.Map(session)
 
 	// Setup aggregator
-	injector.ApplyMap(&aggregation.Aggregator{})
+	injector.ApplyMap(&aggregation.AggregatorImpl{})
 
 	return injector
 }
