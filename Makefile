@@ -3,7 +3,7 @@ all: clean build
 clean:
 	rm -f apollo:
 
-build: syncproto genproto
+build: genproto
 	go build .
 
 genproto:
