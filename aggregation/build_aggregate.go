@@ -4,9 +4,9 @@ import (
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
-func buildAggregate(base *apb.MatchSum, filtered *apb.MatchSum) *apb.MatchAggregate {
+func buildAggregate(base *apb.MatchSum, object *apb.MatchSum) *apb.MatchAggregate {
 	// TODO(igm): implement
-	scalars := filtered.Scalars
+	scalars := object.Scalars
 	return &apb.MatchAggregate{
 		Statistics: &apb.MatchAggregateStatistics{
 			Scalars: &apb.MatchAggregateStatistics_Scalars{
