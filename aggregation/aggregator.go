@@ -83,7 +83,7 @@ func (a *AggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 	sum := &apb.MatchSum{}
 	go func() {
 		for sumRow := range sumsChan {
-			sum = addSums(sum, sumRow)
+			sum = addMatchSums(sum, sumRow)
 		}
 	}()
 
@@ -112,7 +112,7 @@ func (a *AggregatorImpl) fetchSum(f *apb.MatchFilters) (*apb.MatchSum, error) {
 	return &sum, nil
 }
 
-func addSums(a, b *apb.MatchSum) *apb.MatchSum {
+func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {
 	normalizeMatchSum(a)
 	normalizeMatchSum(b)
 	return &apb.MatchSum{
@@ -150,6 +150,12 @@ func addSums(a, b *apb.MatchSum) *apb.MatchSum {
 			WardsPlaced:     addDelta(a.Deltas.WardsPlaced, b.Deltas.WardsPlaced),
 			DamageTaken:     addDelta(a.Deltas.DamageTaken, b.Deltas.DamageTaken),
 		},
+		Masteries:   addStringSubscalarsMap(a.Masteries, b.Masteries),
+		Runes:       addStringSubscalarsMap(a.Runes, b.Runes),
+		Keystones:   addStringSubscalarsMap(a.Keystones, b.Keystones),
+		Summoners:   addStringSubscalarsMap(a.Summoners, b.Summoners),
+		Trinkets:    addUint32SubscalarsMap(a.Trinkets, b.Trinkets),
+		SkillOrders: addStringSubscalarsMap(a.SkillOrders, b.SkillOrders),
 		DurationDistribution: &apb.MatchSum_DurationDistribution{
 			ZeroToTen:      a.DurationDistribution.ZeroToTen + b.DurationDistribution.ZeroToTen,
 			TenToTwenty:    a.DurationDistribution.TenToTwenty + b.DurationDistribution.TenToTwenty,
@@ -200,6 +206,30 @@ func normalizeMatchSum(p *apb.MatchSum) {
 		p.Deltas.DamageTaken = &apb.MatchSum_Deltas_Delta{}
 	}
 
+	if p.Masteries == nil {
+		p.Masteries = map[string]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Runes == nil {
+		p.Runes = map[string]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Keystones == nil {
+		p.Keystones = map[string]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Summoners == nil {
+		p.Summoners = map[string]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Trinkets == nil {
+		p.Trinkets = map[uint32]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.SkillOrders == nil {
+		p.SkillOrders = map[string]*apb.MatchSum_Subscalars{}
+	}
+
 	if p.DurationDistribution == nil {
 		p.DurationDistribution = &apb.MatchSum_DurationDistribution{}
 	}
@@ -212,4 +242,36 @@ func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.M
 		TwentyToThirty: a.TwentyToThirty + b.TwentyToThirty,
 		ThirtyToEnd:    a.ThirtyToEnd + b.ThirtyToEnd,
 	}
+}
+
+func addStringSubscalarsMap(
+	a, b map[string]*apb.MatchSum_Subscalars,
+) map[string]*apb.MatchSum_Subscalars {
+	for i, bv := range b {
+		if av, exists := a[i]; exists {
+			a[i] = &apb.MatchSum_Subscalars{
+				Plays: av.Plays + bv.Plays,
+				Wins:  av.Wins + bv.Wins,
+			}
+		} else {
+			a[i] = bv
+		}
+	}
+	return a
+}
+
+func addUint32SubscalarsMap(
+	a, b map[uint32]*apb.MatchSum_Subscalars,
+) map[uint32]*apb.MatchSum_Subscalars {
+	for i, bv := range b {
+		if av, exists := a[i]; exists {
+			a[i] = &apb.MatchSum_Subscalars{
+				Plays: av.Plays + bv.Plays,
+				Wins:  av.Wins + bv.Wins,
+			}
+		} else {
+			a[i] = bv
+		}
+	}
+	return a
 }

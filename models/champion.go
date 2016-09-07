@@ -30,7 +30,7 @@ func (c *ChampionDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) 
 	base := c.buildBase(req)
 	filters := c.buildFilters(req)
 
-	agg, err := c.Aggregator.Aggregate(base, filters)
+	_, err := c.Aggregator.Aggregate(base, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (c *ChampionDAOImpl) buildBase(req *apb.GetChampionRequest) []*apb.MatchFil
 	for _, patch := range c.Vulgate.FindPatches(req.Patch) {
 		for _, tier := range c.Vulgate.FindTiers(req.Tier) {
 			ret = append(ret, &apb.MatchFilters{
-				ChampionId: ANY_CHAMPION,
+				ChampionId: int32(ANY_CHAMPION),
 				EnemyId:    ANY_ENEMY,
 				Patch:      patch,
 				Tier:       tier,
@@ -61,7 +61,7 @@ func (c *ChampionDAOImpl) buildFilters(req *apb.GetChampionRequest) []*apb.Match
 	for _, patch := range c.Vulgate.FindPatches(req.Patch) {
 		for _, tier := range c.Vulgate.FindTiers(req.Tier) {
 			ret = append(ret, &apb.MatchFilters{
-				ChampionId: req.ChampionId,
+				ChampionId: int32(req.ChampionId),
 				EnemyId:    ANY_ENEMY,
 				Patch:      patch,
 				Tier:       tier,

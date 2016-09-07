@@ -6,12 +6,17 @@ clean:
 build: genproto
 	go build .
 
+syncbuild: syncproto genproto
+	go build .
+
 genproto:
 	./proto/gen_go.sh
 
 syncproto:
 	cd proto && git pull origin master
 
-install:
+init:
 	git submodule update --init
+
+install: init genproto
 	glide install

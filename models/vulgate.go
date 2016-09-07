@@ -8,11 +8,11 @@ type Vulgate interface {
 	FindPatches(rg *apb.PatchRange) []string
 
 	// FindTiers finds all tiers within a tier range, inclusive.
-	FindTiers(rg *apb.TierRange) []uint32
+	FindTiers(rg *apb.TierRange) []int32
 }
 
 // NewVulgate initializes the Vulgate.
-func NewVulgate() (Vulgate, error) {
+func NewVulgate() (*vulgateImpl, error) {
 	// TODO(pradyuman): implement
 	return &vulgateImpl{}, nil
 }
@@ -32,10 +32,10 @@ func (v *vulgateImpl) FindPatches(rg *apb.PatchRange) []string {
 }
 
 // FindTiers implements FindTiers.
-func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []uint32 {
+func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 	if rg == nil {
-		return []uint32{}
+		return []int32{}
 	}
 	// TODO(pradyuman): implement from vulgate
-	return []uint32{rg.Min, rg.Max}
+	return []int32{int32(rg.Min), int32(rg.Max)}
 }
