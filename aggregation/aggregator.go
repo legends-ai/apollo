@@ -106,8 +106,8 @@ func (a *Aggregator) fetchSum(f *apb.MatchFilters) (*apb.MatchSum, error) {
 }
 
 func addSums(a, b *apb.MatchSum) *apb.MatchSum {
-	sanitizeMatchSum(a)
-	sanitizeMatchSum(b)
+	normalizeMatchSum(a)
+	normalizeMatchSum(b)
 	return &apb.MatchSum{
 		Scalars: &apb.MatchSum_Scalars{
 			Plays:                    a.Scalars.Plays + b.Scalars.Plays,
@@ -133,16 +133,77 @@ func addSums(a, b *apb.MatchSum) *apb.MatchSum {
 			Quadrakills:              a.Scalars.Quadrakills + b.Scalars.Quadrakills,
 			Pentakills:               a.Scalars.Pentakills + b.Scalars.Pentakills,
 		},
+		Deltas: &apb.MatchSum_Deltas{
+			CsDiff:          addDelta(a.Deltas.CsDiff, b.Deltas.CsDiff),
+			XpDiff:          addDelta(a.Deltas.XpDiff, b.Deltas.XpDiff),
+			DamageTakenDiff: addDelta(a.Deltas.DamageTakenDiff, b.Deltas.DamageTakenDiff),
+			XpPerMin:        addDelta(a.Deltas.XpPerMin, b.Deltas.XpPerMin),
+			GoldPerMin:      addDelta(a.Deltas.GoldPerMin, b.Deltas.GoldPerMin),
+			TowersPerMin:    addDelta(a.Deltas.TowersPerMin, b.Deltas.TowersPerMin),
+			WardsPlaced:     addDelta(a.Deltas.WardsPlaced, b.Deltas.WardsPlaced),
+			DamageTaken:     addDelta(a.Deltas.DamageTaken, b.Deltas.DamageTaken),
+		},
+		DurationDistribution: &apb.MatchSum_DurationDistribution{
+			ZeroToTen:      a.DurationDistribution.ZeroToTen + b.DurationDistribution.ZeroToTen,
+			TenToTwenty:    a.DurationDistribution.TenToTwenty + b.DurationDistribution.TenToTwenty,
+			TwentyToThirty: a.DurationDistribution.TwentyToThirty + b.DurationDistribution.TwentyToThirty,
+			ThirtyToEnd:    a.DurationDistribution.ThirtyToEnd + b.DurationDistribution.ThirtyToEnd,
+		},
 	}
 }
 
-func sanitizeMatchSum(p *apb.MatchSum) {
+func normalizeMatchSum(p *apb.MatchSum) {
 	if p.Scalars == nil {
 		p.Scalars = &apb.MatchSum_Scalars{}
 	}
 
 	if p.Deltas == nil {
 		p.Deltas = &apb.MatchSum_Deltas{}
+	}
+
+	if p.Deltas.CsDiff == nil {
+		p.Deltas.CsDiff = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.XpDiff == nil {
+		p.Deltas.XpDiff = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.DamageTakenDiff == nil {
+		p.Deltas.DamageTakenDiff = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.XpPerMin == nil {
+		p.Deltas.XpPerMin = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.GoldPerMin == nil {
+		p.Deltas.GoldPerMin = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.TowersPerMin == nil {
+		p.Deltas.TowersPerMin = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.WardsPlaced == nil {
+		p.Deltas.WardsPlaced = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.Deltas.DamageTaken == nil {
+		p.Deltas.DamageTaken = &apb.MatchSum_Deltas_Delta{}
+	}
+
+	if p.DurationDistribution == nil {
+		p.DurationDistribution = &apb.MatchSum_DurationDistribution{}
+	}
+}
+
+func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.MatchSum_Deltas_Delta {
+	return &apb.MatchSum_Deltas_Delta{
+		ZeroToTen:      a.ZeroToTen + b.ZeroToTen,
+		TenToTwenty:    a.TenToTwenty + b.TenToTwenty,
+		TwentyToThirty: a.TwentyToThirty + b.TwentyToThirty,
+		ThirtyToEnd:    a.ThirtyToEnd + b.ThirtyToEnd,
 	}
 }
 
