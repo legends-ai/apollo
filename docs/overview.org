@@ -1,0 +1,38 @@
+#+TITLE: Apollo Overview
+
+* Overview
+Apollo is a service which serves the following roles:
+
+- Fetch MatchSums from Athena's Cassandra output to aggregate them into MatchAggregates.
+- Serve static game data, e.g. game rules and champion info.
+- Return Champion objects derived from these MatchAggregates and static data.
+
+Note: In the future, we seek to break these three roles apart into separate services. However, keeping it all in one service makes things simpler for our current team size.
+
+* Motivation  
+The frontend must display a lot of data. We want a separate service to serve and calculate this data, as the Node.JS backend should only be concerned with isomorphic rendering and routing, to keep things as simple as possible.
+
+* Life of a GetChampionRequest -- How aggregation happens
+When a GetChampionRequest is received, Apollo does the following:
+
+** Pass the request to the ChampionDAO.
+This is just simple routing.
+
+** (ChampionDAO) Build a list of base filters and object filters.
+Base filters are the filters defining the "universe" of the set in which the "object" is a subset of. More specifically, base filters are filters related to all champions and object filters are filters related to just one champion. They let us derive things like overall averages of a stat vs. average of a certain champion.
+
+** (Aggregator) Fetch MatchSums associated with the filters.
+These MatchSums are derived from the Cassandra cluster that Athena spits its data out to. Each filter should have one or zero rows associated with it.
+
+** (Aggregator) Add all the MatchSums together.
+All MatchSums retrieved are added together, base and object sums added separately. Now we are left with two sums: the base MatchSum and the object MatchSum.
+
+Unrelated note: while writing this section, I happened to be listening to /Come Together/ by the Beatles.
+
+** TODO (Aggregator) Construct a MatchAggregate from the two MatchSums.
+
+** (ChampionDAO) Fetch champion static data from the Vulgate.
+
+** (ChampionDAO) Construct the Champion from the static data and MatchAggregate.
+
+** Return the request to the downstream service.
