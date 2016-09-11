@@ -28,6 +28,7 @@ func NewInjector() inject.Injector {
 	}
 
 	cluster := gocql.NewCluster(cfg.DBHost...)
+	cluster.ProtoVersion = 3
 	cluster.Keyspace = cfg.DBKeyspace
 	cluster.Consistency = gocql.Quorum
 	session, err := cluster.CreateSession()

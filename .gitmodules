@@ -1,3 +1,6 @@
 [submodule "proto"]
 	path = proto
 	url = git@github.com:pradyuman/proto.git
+[submodule "vulgate"]
+	path = vulgate
+	url = git@github.com:pradyuman/vulgate.git
