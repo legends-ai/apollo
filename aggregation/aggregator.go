@@ -32,13 +32,14 @@ type AggregatorImpl struct {
 
 // Aggregate aggregates.
 func (a *AggregatorImpl) Aggregate(filters []*apb.MatchFilters) (*apb.MatchAggregate, error) {
-	filtersSum, err := a.Sum(filters)
+	sum, err := a.Sum(filters)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching filters sum: %v", err)
+		return nil, fmt.Errorf("error fetching sum: %v", err)
 	}
 
-	aggregate := buildAggregate(filtersSum)
-	return aggregate, nil
+	quotient := makeQuotient(sum)
+	// TODO impl
+	return nil, nil
 }
 
 // Sum derives a sum from a set of filters.

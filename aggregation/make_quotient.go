@@ -9,7 +9,7 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 	// TODO(igm): implement
 	scalars := sum.Scalars
 	plays := float64(scalars.Plays)
-	dd := scalars.DurationDistribution
+	dd := sum.DurationDistribution
 	return &apb.MatchQuotient{
 		Scalars: &apb.MatchQuotient_Scalars{
 			Plays:                    plays,
@@ -55,8 +55,8 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 }
 
 // makeQuotientDeltas calculates deltas
-func makeQuotientDeltas(deltas *apb.MatchSum_Deltas, dd *apb.MatchSum_DurationDistribution) *apb.MatchQuotient_Deltas {
-	return &apb.MatchQuotient_Deltas{
+func makeQuotientDeltas(deltas *apb.MatchSum_Deltas_Delta, dd *apb.MatchSum_DurationDistribution) *apb.MatchQuotient_Deltas_Delta {
+	return &apb.MatchQuotient_Deltas_Delta{
 		ZeroToTen:      float64(deltas.ZeroToTen) / float64(dd.ZeroToTen),
 		TenToTwenty:    float64(deltas.TenToTwenty) / float64(dd.TenToTwenty),
 		TwentyToThirty: float64(deltas.TwentyToThirty) / float64(dd.TwentyToThirty),
