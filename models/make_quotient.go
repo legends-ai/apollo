@@ -1,4 +1,4 @@
-package aggregation
+package models
 
 import (
 	apb "github.com/simplyianm/apollo/gen-go/asuna"

@@ -1,4 +1,4 @@
-package aggregation
+package models
 
 import (
 	"fmt"
@@ -20,26 +20,49 @@ const (
 
 // Aggregator fetches MatchSums and derives aggregates.
 type Aggregator interface {
+	// Aggregate aggregates.
+	Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error)
 
-	// Aggregate derives a MatchAggregate from a set of filters.
-	Aggregate(filters []*apb.MatchFilters) (*apb.MatchAggregate, error)
+	// DeriveQuotient derives a MatchQuotient from a set of filters.
+	DeriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error)
 }
 
 // AggregatorImpl is an implementation of Aggregator.
 type AggregatorImpl struct {
-	CQL *gocql.Session `inject:"t"`
+	CQL     *gocql.Session `inject:"t"`
+	Vulgate Vulgate        `inject:"t"`
 }
 
 // Aggregate aggregates.
-func (a *AggregatorImpl) Aggregate(filters []*apb.MatchFilters) (*apb.MatchAggregate, error) {
+func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
+	return nil, nil
+}
+
+// buildFilters builds a list of filters for a given champion.
+func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest, cid uint32) []*apb.MatchFilters {
+	var ret []*apb.MatchFilters
+	for _, patch := range a.Vulgate.FindPatches(req.Patch) {
+		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
+			ret = append(ret, &apb.MatchFilters{
+				ChampionId: int32(cid),
+				EnemyId:    ANY_ENEMY,
+				Patch:      patch,
+				Tier:       tier,
+				Region:     req.Region,
+				Role:       req.Role,
+			})
+		}
+	}
+	return ret
+}
+
+// DeriveQuotient derives a quotient.
+func (a *AggregatorImpl) DeriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
 	sum, err := a.Sum(filters)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching sum: %v", err)
 	}
-
-	quotient := makeQuotient(sum)
-	// TODO impl
-	return nil, nil
+	return makeQuotient(sum), nil
 }
 
 // Sum derives a sum from a set of filters.

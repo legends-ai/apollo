@@ -21,6 +21,9 @@ type Vulgate interface {
 
 	// GetPatchTimes gets times for a patch.
 	GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime
+
+	// GetChampionIDs gets a list of champion ids.
+	GetChampionIDs() []uint32
 }
 
 // NewVulgate initializes the Vulgate.
@@ -99,6 +102,11 @@ func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
 }
 
 func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
+	// TODO(pradyuman): implement
+	return nil
+}
+
+func (v *vulgateImpl) GetChampionIDs() []uint32 {
 	// TODO(pradyuman): implement
 	return nil
 }
