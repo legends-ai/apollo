@@ -15,10 +15,17 @@ type Vulgate interface {
 
 	// FindTiers finds all tiers within a tier range, inclusive.
 	FindTiers(rg *apb.TierRange) []int32
+
+	// GetChampionInfo gets information about a champion.
+	GetChampionInfo(id uint32) *apb.Vulgate_Champion
+
+	// GetPatchTimes gets times for a patch.
+	GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime
 }
 
 // NewVulgate initializes the Vulgate.
 func NewVulgate() (*vulgateImpl, error) {
+	// TODO(igm): somehow make this not rely on binary location
 	raw, err := ioutil.ReadFile("./vulgate/vulgate.textproto")
 	if err != nil {
 		return nil, err
@@ -84,4 +91,14 @@ func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 	}
 
 	return tiers
+}
+
+func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
+	// TODO(pradyuman): implement
+	return nil
+}
+
+func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
+	// TODO(pradyuman): implement
+	return nil
 }

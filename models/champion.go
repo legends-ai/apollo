@@ -27,33 +27,25 @@ type ChampionDAOImpl struct {
 
 // Get gets a champion.
 func (c *ChampionDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
-	base := c.buildBase(req)
 	filters := c.buildFilters(req)
 
-	_, err := c.Aggregator.Aggregate(base, filters)
+	agg, err := c.Aggregator.Aggregate(filters)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO(igm): implement
-	return nil, nil
-}
 
-func (c *ChampionDAOImpl) buildBase(req *apb.GetChampionRequest) []*apb.MatchFilters {
-	var ret []*apb.MatchFilters
-	for _, patch := range c.Vulgate.FindPatches(req.Patch) {
-		for _, tier := range c.Vulgate.FindTiers(req.Tier) {
-			ret = append(ret, &apb.MatchFilters{
-				ChampionId: int32(ANY_CHAMPION),
-				EnemyId:    ANY_ENEMY,
-				Patch:      patch,
-				Tier:       tier,
-				Region:     req.Region,
-				Role:       req.Role,
-			})
-		}
-	}
-	return ret
+	patchTimes := c.Vulgate.GetPatchTimes(req.Patch)
+
+	return &apb.Champion{
+		Metadata: &apb.Champion_Metadata{
+			StaticInfo: c.Vulgate.GetChampionInfo(req.ChampionId),
+			PatchStart: patchTimes.Start,
+			PatchEnd:   patchTimes.End,
+		},
+		MatchAggregate: agg,
+	}, nil
 }
 
 func (c *ChampionDAOImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchFilters {

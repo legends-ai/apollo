@@ -21,10 +21,8 @@ const (
 // Aggregator fetches MatchSums and derives aggregates.
 type Aggregator interface {
 
-	// Aggregate derives a MatchAggregate from two sets of filters:
-	// - Base, the base stats to compare against
-	// - Filters, the filters to compare the specifics against
-	Aggregate(base []*apb.MatchFilters, filters []*apb.MatchFilters) (*apb.MatchAggregate, error)
+	// Aggregate derives a MatchAggregate from a set of filters.
+	Aggregate(filters []*apb.MatchFilters) (*apb.MatchAggregate, error)
 }
 
 // AggregatorImpl is an implementation of Aggregator.
@@ -33,20 +31,13 @@ type AggregatorImpl struct {
 }
 
 // Aggregate aggregates.
-func (a *AggregatorImpl) Aggregate(
-	base []*apb.MatchFilters, filters []*apb.MatchFilters,
-) (*apb.MatchAggregate, error) {
-	baseSum, err := a.Sum(base)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching base sum: %v", err)
-	}
-
+func (a *AggregatorImpl) Aggregate(filters []*apb.MatchFilters) (*apb.MatchAggregate, error) {
 	filtersSum, err := a.Sum(filters)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching filters sum: %v", err)
 	}
 
-	aggregate := buildAggregate(baseSum, filtersSum)
+	aggregate := buildAggregate(filtersSum)
 	return aggregate, nil
 }
 
