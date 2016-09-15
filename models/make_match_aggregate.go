@@ -2,6 +2,8 @@ package models
 
 import (
 	"sort"
+	"strconv"
+	"strings"
 
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
@@ -186,4 +188,47 @@ func appendDeltas(dqs groupedDeltaQuotients, ds *apb.MatchQuotient_Deltas_Delta)
 		twentyToThirty: append(dqs.twentyToThirty, ds.TwentyToThirty),
 		thirtyToEnd:    append(dqs.thirtyToEnd, ds.ThirtyToEnd),
 	}
+}
+
+// deserializeBonusSet works for masteries, runes, and keystones.
+func deserializeBonusSet(s string) map[uint32]uint32 {
+	ret := map[uint32]uint32{}
+	// get rune counts
+	rs := strings.Split(s, "|")
+	for _, r := range rs {
+		// get data of rune count
+		ps := strings.Split(r, ":")
+		id, _ := strconv.Atoi(ps[0])
+		ct, _ := strconv.Atoi(ps[2])
+		ret[uint32(id)] = uint32(ct)
+	}
+	return ret
+}
+
+// deserializeSummoners deserializes the summoners key
+func deserializeSummoners(s string) (uint32, uint32) {
+	rs := strings.Split(s, "|")
+	a, _ := strconv.Atoi(rs[0])
+	b, _ := strconv.Atoi(rs[1])
+	return uint32(a), uint32(b)
+}
+
+// deserializeSkillOrder converts a skill order string to a list of abilities.
+func deserializeSkillOrder(s string) []apb.Ability {
+	var ret []apb.Ability
+	for _, r := range s {
+		switch r {
+		case 'Q':
+			ret = append(ret, apb.Ability_Q)
+		case 'W':
+			ret = append(ret, apb.Ability_W)
+		case 'E':
+			ret = append(ret, apb.Ability_E)
+		case 'R':
+			ret = append(ret, apb.Ability_R)
+		default:
+			ret = append(ret, apb.Ability_U)
+		}
+	}
+	return ret
 }
