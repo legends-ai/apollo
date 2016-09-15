@@ -128,6 +128,26 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 			Quadrakills:              deriveStatistic(gs.scalars.quadrakills, self.Scalars.Quadrakills),
 			Pentakills:               deriveStatistic(gs.scalars.pentakills, self.Scalars.Pentakills),
 		},
+
+		Deltas: &apb.MatchAggregateStatistics_Deltas{
+			CsDiff:          deriveDeltaStatistic(gs.deltas.csDiff, self.Deltas.CsDiff),
+			XpDiff:          deriveDeltaStatistic(gs.deltas.xpDiff, self.Deltas.XpDiff),
+			DamageTakenDiff: deriveDeltaStatistic(gs.deltas.damageTakenDiff, self.Deltas.DamageTakenDiff),
+			XpPerMin:        deriveDeltaStatistic(gs.deltas.xpPerMin, self.Deltas.XpPerMin),
+			GoldPerMin:      deriveDeltaStatistic(gs.deltas.goldPerMin, self.Deltas.GoldPerMin),
+			TowersPerMin:    deriveDeltaStatistic(gs.deltas.towersPerMin, self.Deltas.TowersPerMin),
+			WardsPlaced:     deriveDeltaStatistic(gs.deltas.wardsPlaced, self.Deltas.WardsPlaced),
+			DamageTaken:     deriveDeltaStatistic(gs.deltas.damageTaken, self.Deltas.DamageTaken),
+		},
+	}
+}
+
+func deriveDeltaStatistic(dqs groupedDeltaQuotients, ds *apb.MatchQuotient_Deltas_Delta) *apb.MatchAggregateStatistics_Deltas_Delta {
+	return &apb.MatchAggregateStatistics_Deltas_Delta{
+		ZeroToTen:      deriveStatistic(dqs.zeroToTen, ds.ZeroToTen),
+		TenToTwenty:    deriveStatistic(dqs.tenToTwenty, ds.TenToTwenty),
+		TwentyToThirty: deriveStatistic(dqs.twentyToThirty, ds.TwentyToThirty),
+		ThirtyToEnd:    deriveStatistic(dqs.thirtyToEnd, ds.ThirtyToEnd),
 	}
 }
 
