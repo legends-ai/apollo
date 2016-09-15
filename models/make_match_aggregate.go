@@ -1,6 +1,8 @@
 package models
 
 import (
+	"sort"
+
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
@@ -62,11 +64,12 @@ type groupedDeltasQuotients struct {
 func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32) *apb.MatchAggregateStatistics {
 	// grouped quotient aggregates
 	var gs groupedQuotients
+	self := quots[id]
 
 	for _, quot := range quots {
 		// Scalars
 		gs.scalars.winRate = append(gs.scalars.winRate, quot.Scalars.Wins)
-		gs.scalars.gamesPlayed = append(gs.scalars.pickRate, quot.Scalars.Plays)
+		gs.scalars.gamesPlayed = append(gs.scalars.gamesPlayed, quot.Scalars.Plays)
 		gs.scalars.goldEarned = append(gs.scalars.goldEarned, quot.Scalars.GoldEarned)
 		gs.scalars.kills = append(gs.scalars.kills, quot.Scalars.Kills)
 		gs.scalars.deaths = append(gs.scalars.deaths, quot.Scalars.Deaths)
@@ -100,7 +103,60 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 		gs.deltas.damageTaken = appendDeltas(gs.deltas.damageTaken, quot.Deltas.DamageTaken)
 	}
 
-	return nil
+	return &apb.MatchAggregateStatistics{
+		Scalars: &apb.MatchAggregateStatistics_Scalars{
+			WinRate:                  deriveStatistic(gs.scalars.winRate, self.Scalars.Wins),
+			GamesPlayed:              deriveStatistic(gs.scalars.gamesPlayed, self.Scalars.Plays),
+			GoldEarned:               deriveStatistic(gs.scalars.goldEarned, self.Scalars.GoldEarned),
+			Kills:                    deriveStatistic(gs.scalars.kills, self.Scalars.Kills),
+			Deaths:                   deriveStatistic(gs.scalars.deaths, self.Scalars.Deaths),
+			Assists:                  deriveStatistic(gs.scalars.assists, self.Scalars.Assists),
+			DamageDealt:              deriveStatistic(gs.scalars.damageDealt, self.Scalars.DamageDealt),
+			MinionsKilled:            deriveStatistic(gs.scalars.minionsKilled, self.Scalars.MinionsKilled),
+			TeamJungleMinionsKilled:  deriveStatistic(gs.scalars.teamJungleMinionsKilled, self.Scalars.TeamJungleMinionsKilled),
+			EnemyJungleMinionsKilled: deriveStatistic(gs.scalars.enemyJungleMinionsKilled, self.Scalars.EnemyJungleMinionsKilled),
+			StructureDamage:          deriveStatistic(gs.scalars.structureDamage, self.Scalars.StructureDamage),
+			KillingSpree:             deriveStatistic(gs.scalars.killingSpree, self.Scalars.KillingSpree),
+			WardsBought:              deriveStatistic(gs.scalars.wardsBought, self.Scalars.WardsBought),
+			WardsPlaced:              deriveStatistic(gs.scalars.wardsPlaced, self.Scalars.WardsPlaced),
+			WardsKilled:              deriveStatistic(gs.scalars.wardsKilled, self.Scalars.WardsKilled),
+			CrowdControl:             deriveStatistic(gs.scalars.crowdControl, self.Scalars.CrowdControl),
+			FirstBlood:               deriveStatistic(gs.scalars.firstBlood, self.Scalars.FirstBlood),
+			FirstBloodAssist:         deriveStatistic(gs.scalars.firstBloodAssist, self.Scalars.FirstBloodAssist),
+			DoubleKills:              deriveStatistic(gs.scalars.doubleKills, self.Scalars.Doublekills),
+			TripleKills:              deriveStatistic(gs.scalars.tripleKills, self.Scalars.Triplekills),
+			Quadrakills:              deriveStatistic(gs.scalars.quadrakills, self.Scalars.Quadrakills),
+			Pentakills:               deriveStatistic(gs.scalars.pentakills, self.Scalars.Pentakills),
+		},
+	}
+}
+
+func deriveStatistic(vals []float64, val float64) *apb.MatchAggregateStatistics_Statistic {
+	var sum float64
+	for _, v := range vals {
+		sum += v
+	}
+	avg := sum / float64(len(vals))
+
+	// sort desc so we can get the rank
+	sort.Sort(sort.Reverse(sort.Float64Slice(vals)))
+	var rank int
+	for idx, v := range vals {
+		if v == val {
+			rank = idx + 1
+			break
+		}
+	}
+
+	percentile := 1.0 - float64(rank)/float64(len(vals))
+
+	// TODO(igm): implement change
+	return &apb.MatchAggregateStatistics_Statistic{
+		Rank:       uint32(rank),
+		Value:      val,
+		Average:    avg,
+		Percentile: percentile,
+	}
 }
 
 func appendDeltas(dqs groupedDeltaQuotients, ds *apb.MatchQuotient_Deltas_Delta) groupedDeltaQuotients {
