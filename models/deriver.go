@@ -9,8 +9,24 @@ import (
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
-func makeMatchAggregate(quots map[uint32]*apb.MatchQuotient, id uint32) *apb.MatchAggregate {
-	return nil
+// Deriver derives MatchAggregates from quotients.
+// This does not need its own class, but there's so much code that this makes sense.
+type Deriver interface {
+	// Derive derives a MatchAggregate from a map of MatchQuotients and a champion id.
+	Derive(quots map[uint32]*apb.MatchQuotient, id uint32) (*apb.MatchAggregate, error)
+}
+
+// NewDeriver constructs a new Deriver.
+func NewDeriver() Deriver {
+	return &deriverImpl{}
+}
+
+type deriverImpl struct{}
+
+func (d *deriverImpl) Derive(quots map[uint32]*apb.MatchQuotient, id uint32) (*apb.MatchAggregate, error) {
+	return &apb.MatchAggregate{
+		Statistics: makeMatchAggregateStatistics(quots, id),
+	}, nil
 }
 
 type groupedQuotients struct {

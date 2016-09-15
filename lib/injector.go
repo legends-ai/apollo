@@ -37,6 +37,7 @@ func NewInjector() inject.Injector {
 	injector.Map(session)
 
 	// Setup aggregator
+	injector.ApplyMap(models.NewDeriver())
 	injector.ApplyMap(&models.AggregatorImpl{})
 
 	return injector

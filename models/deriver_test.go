@@ -19,7 +19,7 @@ func TestDeserializeBonusSet(t *testing.T) {
 			},
 		},
 	} {
-		got := deserializeBonusSet(test.In)
+		got, _ := deserializeBonusSet(test.In)
 		if !reflect.DeepEqual(got, test.Want) {
 			t.Errorf("Error with test %q: got %v, want %v", test.Description, got, test.Want)
 		}

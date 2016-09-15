@@ -27,6 +27,7 @@ type Aggregator interface {
 // AggregatorImpl is an implementation of Aggregator.
 type AggregatorImpl struct {
 	CQL     *gocql.Session `inject:"t"`
+	Deriver Deriver        `inject:"t"`
 	Vulgate Vulgate        `inject:"t"`
 }
 
@@ -42,7 +43,7 @@ func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 	}
 
 	// now let us build the match aggregate
-	return makeMatchAggregate(quots, req.ChampionId), nil
+	return a.Deriver.Derive(quots, req.ChampionId)
 }
 
 func (a *AggregatorImpl) findChampionQuotient(req *apb.GetChampionRequest, cid uint32) (*apb.MatchQuotient, error) {
