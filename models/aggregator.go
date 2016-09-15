@@ -22,9 +22,6 @@ const (
 type Aggregator interface {
 	// Aggregate aggregates.
 	Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error)
-
-	// DeriveQuotient derives a MatchQuotient from a set of filters.
-	DeriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error)
 }
 
 // AggregatorImpl is an implementation of Aggregator.
@@ -35,7 +32,22 @@ type AggregatorImpl struct {
 
 // Aggregate aggregates.
 func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
-	return nil, nil
+	quots := map[uint32]*apb.MatchQuotient{}
+	for _, id := range a.Vulgate.GetChampionIDs() {
+		quot, err := a.findChampionQuotient(req, id)
+		if err != nil {
+			return nil, err
+		}
+		quots[id] = quot
+	}
+
+	// now let us build the match aggregate
+	return makeMatchAggregate(quots, req.ChampionId), nil
+}
+
+func (a *AggregatorImpl) findChampionQuotient(req *apb.GetChampionRequest, cid uint32) (*apb.MatchQuotient, error) {
+	f := a.buildFilters(req, cid)
+	return a.deriveQuotient(f)
 }
 
 // buildFilters builds a list of filters for a given champion.
@@ -56,8 +68,7 @@ func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest, cid uint32) [
 	return ret
 }
 
-// DeriveQuotient derives a quotient.
-func (a *AggregatorImpl) DeriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
+func (a *AggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
 	sum, err := a.Sum(filters)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching sum: %v", err)
