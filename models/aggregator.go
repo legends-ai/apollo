@@ -110,6 +110,9 @@ func (a *aggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.Match
 	if err != nil {
 		return nil, fmt.Errorf("error fetching sum: %v", err)
 	}
+	if sum == nil {
+		return nil, nil
+	}
 	return makeQuotient(sum), nil
 }
 
@@ -145,9 +148,12 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 	}
 
 	// Create aggregate sum
-	sum := &apb.MatchSum{}
+	sum := (*apb.MatchSum)(nil)
 	go func() {
 		for sumRow := range sumsChan {
+			if sum == nil {
+				sum = &apb.MatchSum{}
+			}
 			sum = addMatchSums(sum, sumRow)
 		}
 	}()
