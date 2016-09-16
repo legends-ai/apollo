@@ -13,19 +13,23 @@ const (
 
 // ChampionDAO is a Champion DAO.
 type ChampionDAO interface {
-
 	// Get gets a champion.
 	Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error)
 }
 
-// ChampionDAOImpl is an implementation of ChampionDAO.
-type ChampionDAOImpl struct {
+// NewChampionDAO returns a new ChampionDAO.
+func NewChampionDAO() ChampionDAO {
+	return &championDAOImpl{}
+}
+
+// championDAOImpl is an implementation of ChampionDAO.
+type championDAOImpl struct {
 	Aggregator Aggregator `inject:"t"`
 	Vulgate    Vulgate    `inject:"t"`
 }
 
 // Get gets a champion.
-func (c *ChampionDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
+func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
 	agg, err := c.Aggregator.Aggregate(req)
 	if err != nil {
 		return nil, err
