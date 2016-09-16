@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"log"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/gocql/gocql"
 	"github.com/simplyianm/apollo/config"
@@ -21,27 +19,47 @@ func NewInjector() inject.Injector {
 	cfg := config.Initialize()
 	injector.Map(cfg)
 
-	_, err := injector.ApplyMap(&models.MockChampionDAO{})
-	if err != nil {
-		log.Fatalf("Could not inject ChampionDAO: %v", err)
-	}
-
 	cluster := gocql.NewCluster(cfg.DBHost...)
 	cluster.ProtoVersion = 3
 	cluster.Keyspace = cfg.DBKeyspace
 	cluster.Consistency = gocql.Quorum
 	session, err := cluster.CreateSession()
 	if err != nil {
-		log.Fatalf("Could not connect to Cassandra: %v", err)
+		logger.Fatalf("Could not connect to Cassandra: %v", err)
 	}
 	injector.Map(session)
 
+	// Vulgate
+	vulgate, err := models.NewVulgate()
+	if err != nil {
+		logger.Fatalf("Could not instantiate Vulgate: %v", err)
+	}
+	_, err = injector.ApplyMap(vulgate)
+	if err != nil {
+		logger.Fatalf("Could not inject Vulgate: %v", err)
+	}
+
 	// Database DAO
-	injector.ApplyMap(models.NewMatchSumDAO())
+	_, err = injector.ApplyMap(models.NewMatchSumDAO())
+	if err != nil {
+		logger.Fatalf("Could not inject MatchSumDAO: %v", err)
+	}
 
 	// Setup aggregator
-	injector.ApplyMap(models.NewDeriver())
-	injector.ApplyMap(models.NewAggregator())
+	_, err = injector.ApplyMap(models.NewDeriver())
+	if err != nil {
+		logger.Fatalf("Could not inject Deriver: %v", err)
+	}
+
+	_, err = injector.ApplyMap(models.NewAggregator())
+	if err != nil {
+		logger.Fatalf("Could not inject Aggregator: %v", err)
+	}
+
+	_, err = injector.ApplyMap(models.NewChampionDAO())
+	if err != nil {
+		logger.Fatalf("Could not inject ChampionDAO: %v", err)
+	}
 
 	return injector
 }
