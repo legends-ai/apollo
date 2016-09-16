@@ -9,7 +9,7 @@ import (
 
 const (
 	stmtGetSum = `SELECT match_sum
-		FROM athena.matches
+		FROM athena.match_sums
 		WHERE
 			champion_id = ? AND enemy_id = ? AND patch = ? AND
 			tier = ? AND region = ? AND role = ?`
@@ -137,7 +137,9 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 			}
 
 			// Process sum
-			sumsChan <- s
+			if s != nil {
+				sumsChan <- s
+			}
 			wg.Done()
 		}(filter)
 	}

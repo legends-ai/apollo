@@ -10,6 +10,7 @@ import (
 )
 
 type MatchSumDAO interface {
+	// Get gets a MatchSum from MatchFilters.
 	Get(f *apb.MatchFilters) (*apb.MatchSum, error)
 }
 
@@ -28,6 +29,9 @@ func (a *matchSumDAO) Get(f *apb.MatchFilters) (*apb.MatchSum, error) {
 		stmtGetSum, f.ChampionId, f.EnemyId, f.Patch,
 		f.Tier, int32(f.Region), int32(f.Role),
 	).Scan(&rawSum); err != nil {
+		if err == gocql.ErrNotFound {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("error fetching sum from Cassandra: %v", err)
 	}
 
