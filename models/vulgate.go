@@ -117,8 +117,7 @@ func parseTier(s string) uint32 {
 }
 
 func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
-	// TODO(pradyuman): implement
-	return nil
+	return v.proto.Champions[id]
 }
 
 func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
@@ -127,6 +126,9 @@ func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
 }
 
 func (v *vulgateImpl) GetChampionIDs() []uint32 {
-	// TODO(pradyuman): implement
-	return nil
+	var ret []uint32
+	for id, _ := range v.proto.Champions {
+		ret = append(ret, id)
+	}
+	return ret
 }
