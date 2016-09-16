@@ -32,7 +32,7 @@ func (d *deriverImpl) Derive(
 ) (*apb.MatchAggregate, error) {
 	// precondition -- champ must exist
 	if champions[id] == nil {
-		return nil, fmt.Errorf("champion %q does not exist in quotient map", id)
+		return nil, fmt.Errorf("champion %d does not exist in quotient map", id)
 	}
 
 	collections, err := makeMatchAggregateCollections(champions[id])
