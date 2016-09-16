@@ -8,6 +8,16 @@ import (
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
+const (
+	TierChallenger = "CHALLENGER"
+	TierMaster     = "MASTER"
+	TierDiamond    = "DIAMOND"
+	TierPlatinum   = "PLATINUM"
+	TierGold       = "GOLD"
+	TierSilver     = "SILVER"
+	TierBronze     = "BRONZE"
+)
+
 // Vulgate defines the interface to the Vulgate.
 type Vulgate interface {
 	// FindPatches finds all patches within a patch range, inclusive.
@@ -76,13 +86,13 @@ func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 
 	tiers := []int32{}
 	var start, end int = -1, -1
-	for i, _ := range v.proto.Tiers {
+	for i, tier := range v.proto.Tiers {
 		if start == -1 && i+1 != int(rg.Min) {
 			continue
 		}
 
 		start = i
-		tiers = append(tiers, int32(i+1))
+		tiers = append(tiers, parseTier(tier))
 		if end == -1 && i+1 == int(rg.Max) {
 			end = i + 1
 			break
@@ -94,6 +104,27 @@ func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 	}
 
 	return tiers
+}
+
+func parseTier(s string) int32 {
+	switch s {
+	case TierChallenger:
+		return 0x70
+	case TierMaster:
+		return 0x60
+	case TierDiamond:
+		return 0x50
+	case TierPlatinum:
+		return 0x40
+	case TierGold:
+		return 0x30
+	case TierSilver:
+		return 0x20
+	case TierBronze:
+		return 0x10
+	default:
+		return 0
+	}
 }
 
 func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
