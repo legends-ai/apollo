@@ -14,6 +14,7 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 	scalars := sum.Scalars
 	plays := float64(scalars.Plays)
 	dd := sum.DurationDistribution
+
 	return &apb.MatchQuotient{
 		Scalars: &apb.MatchQuotient_Scalars{
 			Plays:                    plays,
@@ -77,9 +78,7 @@ func makeQuotientSubscalars(ss *apb.MatchSum_Subscalars, plays float64) *apb.Mat
 }
 
 func makeQuotientSubscalarStringMap(ss map[string]*apb.MatchSum_Subscalars, plays float64) map[string]*apb.MatchQuotient_Subscalars {
-	// goddamit go
-	// no fucking generics
-	// fucking piece of shit
+	// TODO(igm): truncate lower values
 	ret := map[string]*apb.MatchQuotient_Subscalars{}
 	for key, s := range ss {
 		ret[key] = makeQuotientSubscalars(s, plays)
@@ -88,9 +87,7 @@ func makeQuotientSubscalarStringMap(ss map[string]*apb.MatchSum_Subscalars, play
 }
 
 func makeQuotientSubscalarUint32Map(ss map[uint32]*apb.MatchSum_Subscalars, plays float64) map[uint32]*apb.MatchQuotient_Subscalars {
-	// goddamit go
-	// no fucking generics
-	// fucking piece of shit
+	// TODO(igm): truncate lower values
 	ret := map[uint32]*apb.MatchQuotient_Subscalars{}
 	for key, s := range ss {
 		ret[key] = makeQuotientSubscalars(s, plays)
