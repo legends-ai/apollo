@@ -25,3 +25,24 @@ func TestDeserializeBonusSet(t *testing.T) {
 		}
 	}
 }
+
+func TestDeserializeSummoners(t *testing.T) {
+	for _, test := range []struct {
+		Description string
+		In          string
+		Want1       uint32
+		Want2       uint32
+	}{
+		{
+			Description: "Normal summoners",
+			In:          "123|456",
+			Want1:       123,
+			Want2:       456,
+		},
+	} {
+		got1, got2, _ := deserializeSummoners(test.In)
+		if got1 != test.Want1 || got2 != test.Want2 {
+			t.Errorf("Error with test %q: got (%v, %v), want (%v, %v)", test.Description, got1, got2, test.Want1, test.Want2)
+		}
+	}
+}
