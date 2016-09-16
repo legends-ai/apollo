@@ -84,29 +84,18 @@ func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 		return []int32{}
 	}
 
-	tiers := []int32{}
-	var start, end int = -1, -1
-	for i, tier := range v.proto.Tiers {
-		if start == -1 && i+1 != int(rg.Min) {
-			continue
+	var tiers []int32
+	for _, tier := range v.proto.Tiers {
+		v := parseTier(tier)
+		if rg.Min <= v && rg.Max >= v {
+			tiers = append(tiers, int32(v))
 		}
-
-		start = i
-		tiers = append(tiers, parseTier(tier))
-		if end == -1 && i+1 == int(rg.Max) {
-			end = i + 1
-			break
-		}
-	}
-
-	if start == -1 || end == -1 {
-		return []int32{}
 	}
 
 	return tiers
 }
 
-func parseTier(s string) int32 {
+func parseTier(s string) uint32 {
 	switch s {
 	case TierChallenger:
 		return 0x70
