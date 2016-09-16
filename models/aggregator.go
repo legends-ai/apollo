@@ -142,7 +142,7 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 
 		// Process sum
 		if s != nil {
-			s = normalizeMatchSum(s)
+			normalizeMatchSum(s)
 			if sum == nil {
 				sum = s
 			} else {
