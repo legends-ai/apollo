@@ -30,6 +30,11 @@ type deriverImpl struct{}
 func (d *deriverImpl) Derive(
 	champions map[uint32]*apb.MatchQuotient, roles map[apb.Role]*apb.MatchQuotient, id uint32,
 ) (*apb.MatchAggregate, error) {
+	// precondition -- champ must exist
+	if champions[id] == nil {
+		return nil, fmt.Errorf("champion %q does not exist in quotient map: %v", id, err)
+	}
+
 	collections, err := makeMatchAggregateCollections(champions[id])
 	if err != nil {
 		return nil, fmt.Errorf("error parsing collections: %v", err)
