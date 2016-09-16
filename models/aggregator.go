@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/gocql/gocql"
-	"github.com/golang/protobuf/proto"
-
 	apb "github.com/simplyianm/apollo/gen-go/asuna"
 )
 
@@ -24,15 +21,20 @@ type Aggregator interface {
 	Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error)
 }
 
-// AggregatorImpl is an implementation of Aggregator.
-type AggregatorImpl struct {
-	CQL     *gocql.Session `inject:"t"`
-	Deriver Deriver        `inject:"t"`
-	Vulgate Vulgate        `inject:"t"`
+// NewAggregator constructs a new Aggregator.
+func NewAggregator() Aggregator {
+	return &aggregatorImpl{}
+}
+
+// aggregatorImpl is an implementation of Aggregator.
+type aggregatorImpl struct {
+	MatchSumDAO MatchSumDAO `inject:"t"`
+	Deriver     Deriver     `inject:"t"`
+	Vulgate     Vulgate     `inject:"t"`
 }
 
 // Aggregate aggregates.
-func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
+func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
 	champions, err := a.findChampionQuotients(req)
 	if err != nil {
 		return nil, fmt.Errorf("error finding champion quotients: %v", err)
@@ -47,7 +49,7 @@ func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 	return a.Deriver.Derive(champions, roles, req.ChampionId)
 }
 
-func (a *AggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
+func (a *aggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
 	champions := map[uint32]*apb.MatchQuotient{}
 	for _, id := range a.Vulgate.GetChampionIDs() {
 		copy := *req
@@ -62,7 +64,7 @@ func (a *AggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map
 	return champions, nil
 }
 
-func (a *AggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb.Role]*apb.MatchQuotient, error) {
+func (a *aggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb.Role]*apb.MatchQuotient, error) {
 	roles := map[apb.Role]*apb.MatchQuotient{}
 
 	for _, role := range []apb.Role{
@@ -86,7 +88,7 @@ func (a *AggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb
 }
 
 // buildFilters builds a list of filters for a given champion.
-func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchFilters {
+func (a *aggregatorImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchFilters {
 	var ret []*apb.MatchFilters
 	for _, patch := range a.Vulgate.FindPatches(req.Patch) {
 		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
@@ -103,7 +105,7 @@ func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchF
 	return ret
 }
 
-func (a *AggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
+func (a *aggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
 	sum, err := a.Sum(filters)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching sum: %v", err)
@@ -112,7 +114,7 @@ func (a *AggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.Match
 }
 
 // Sum derives a sum from a set of filters.
-func (a *AggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
+func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 	// Channel containing sums
 	sumsChan := make(chan *apb.MatchSum)
 
@@ -129,7 +131,7 @@ func (a *AggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 		// Asynchronous get
 		go func(filter *apb.MatchFilters) {
 			// Error handling
-			s, err := a.fetchSum(filter)
+			s, err := a.MatchSumDAO.Get(filter)
 			if err != nil {
 				fetchErr = err
 			}
@@ -154,23 +156,6 @@ func (a *AggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 
 	// Return sum and error
 	return sum, fetchErr
-}
-
-func (a *AggregatorImpl) fetchSum(f *apb.MatchFilters) (*apb.MatchSum, error) {
-	var rawSum []byte
-	if err := a.CQL.Query(
-		stmtGetSum, f.ChampionId, f.EnemyId, f.Patch,
-		f.Tier, int32(f.Region), int32(f.Role),
-	).Scan(&rawSum); err != nil {
-		return nil, fmt.Errorf("error fetching sum from Cassandra: %v", err)
-	}
-
-	var sum apb.MatchSum
-	if err := proto.Unmarshal(rawSum, &sum); err != nil {
-		return nil, fmt.Errorf("error unmarshaling sum: %v", err)
-	}
-
-	return &sum, nil
 }
 
 func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {

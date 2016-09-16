@@ -36,9 +36,12 @@ func NewInjector() inject.Injector {
 	}
 	injector.Map(session)
 
+	// Database DAO
+	injector.ApplyMap(models.NewMatchSumDAO())
+
 	// Setup aggregator
 	injector.ApplyMap(models.NewDeriver())
-	injector.ApplyMap(&models.AggregatorImpl{})
+	injector.ApplyMap(models.NewAggregator())
 
 	return injector
 }
