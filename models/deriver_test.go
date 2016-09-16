@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	apb "github.com/simplyianm/apollo/gen-go/asuna"
+	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
 func TestDeserializeBonusSet(t *testing.T) {

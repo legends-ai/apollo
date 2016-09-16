@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	apb "github.com/simplyianm/apollo/gen-go/asuna"
+	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
 const (

@@ -3,7 +3,7 @@ package models
 import (
 	"golang.org/x/net/context"
 
-	apb "github.com/simplyianm/apollo/gen-go/asuna"
+	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
 const (

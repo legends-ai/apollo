@@ -2,9 +2,9 @@ package lib
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/asunaio/apollo/config"
+	"github.com/asunaio/apollo/models"
 	"github.com/gocql/gocql"
-	"github.com/simplyianm/apollo/config"
-	"github.com/simplyianm/apollo/models"
 	"github.com/simplyianm/inject"
 )
 

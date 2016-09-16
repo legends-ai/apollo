@@ -9,11 +9,11 @@ import (
 	"github.com/simplyianm/inject"
 	"google.golang.org/grpc"
 
-	"github.com/simplyianm/apollo/config"
-	"github.com/simplyianm/apollo/lib"
-	"github.com/simplyianm/apollo/server"
+	"github.com/asunaio/apollo/config"
+	"github.com/asunaio/apollo/lib"
+	"github.com/asunaio/apollo/server"
 
-	apb "github.com/simplyianm/apollo/gen-go/asuna"
+	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
 func main() {
