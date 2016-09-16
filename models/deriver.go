@@ -352,10 +352,44 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		})
 	}
 
+	// derive trinkets
+	var trinkets []*apb.MatchAggregateCollections_Trinket
+	for trinket, tstats := range quot.Trinkets {
+		// tstats is trinket subscalars
+		trinkets = append(trinkets, &apb.MatchAggregateCollections_Trinket{
+			Trinket:  trinket,
+			PickRate: tstats.Plays,
+			WinRate:  tstats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(tstats.Plays * quot.Scalars.Plays),
+		})
+	}
+
+	// derive skill orders
+	var skillOrders []*apb.MatchAggregateCollections_SkillOrder
+	for sos, sostats := range quot.SkillOrders {
+		so, err := deserializeSkillOrder(sos)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize skill order: %v", err)
+		}
+		// sostats is skill order subscalars
+		skillOrders = append(skillOrders, &apb.MatchAggregateCollections_SkillOrder{
+			SkillOrder: so,
+			PickRate:   sostats.Plays,
+			WinRate:    sostats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(sostats.Plays * quot.Scalars.Plays),
+		})
+	}
+
+	// TODO(igm ^ pradyuman): builds
+
 	return &apb.MatchAggregateCollections{
 		Runes:          runes,
 		Masteries:      masteries,
 		Keystones:      keystones,
 		SummonerSpells: summonerSpells,
+		Trinkets:       trinkets,
+		SkillOrders:    skillOrders,
 	}, nil
 }
