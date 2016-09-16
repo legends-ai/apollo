@@ -138,10 +138,10 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 
 	// Concurrently fetch all sums
 	var wg sync.WaitGroup
-	wg.Add(len(filters))
 
 	// Iterate over all filters
 	for _, filter := range filters {
+		wg.Add(1)
 
 		// Asynchronous get
 		go func(filter *apb.MatchFilters) {
