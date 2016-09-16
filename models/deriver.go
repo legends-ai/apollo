@@ -333,9 +333,29 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		})
 	}
 
+	// derive summoners
+	var summonerSpells []*apb.MatchAggregateCollections_SummonerSet
+	for ss, sstats := range quot.Summoners {
+		// ss is summoner string
+		// sstats is summoner subscalars
+		spell1, spell2, err := deserializeSummoners(ss)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize summoners: %v", err)
+		}
+		summonerSpells = append(summonerSpells, &apb.MatchAggregateCollections_SummonerSet{
+			Spell1:   spell1,
+			Spell2:   spell2,
+			PickRate: sstats.Plays,
+			WinRate:  sstats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(sstats.Plays * quot.Scalars.Plays),
+		})
+	}
+
 	return &apb.MatchAggregateCollections{
-		Runes:     runes,
-		Masteries: masteries,
-		Keystones: keystones,
+		Runes:          runes,
+		Masteries:      masteries,
+		Keystones:      keystones,
+		SummonerSpells: summonerSpells,
 	}, nil
 }
