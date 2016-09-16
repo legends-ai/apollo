@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"sync"
 
 	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
@@ -130,52 +129,29 @@ func (a *aggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.Match
 
 // Sum derives a sum from a set of filters.
 func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
-	// Channel containing sums
-	sumsChan := make(chan *apb.MatchSum)
-
-	// Error from fetching aggregates
-	var fetchErr error = nil
-
-	// Concurrently fetch all sums
-	var wg sync.WaitGroup
+	// Create aggregate sum
+	sum := (*apb.MatchSum)(nil)
 
 	// Iterate over all filters
 	for _, filter := range filters {
-		wg.Add(1)
+		// Error handling
+		s, err := a.MatchSumDAO.Get(filter)
+		if err != nil {
+			return nil, err
+		}
 
-		// Asynchronous get
-		go func(filter *apb.MatchFilters) {
-			// Error handling
-			s, err := a.MatchSumDAO.Get(filter)
-			if err != nil {
-				fetchErr = err
+		// Process sum
+		if s != nil {
+			if sum == nil {
+				sum = s
+			} else {
+				sum = addMatchSums(sum, s)
 			}
-
-			// Process sum
-			if s != nil {
-				sumsChan <- s
-			}
-			wg.Done()
-		}(filter)
+		}
 	}
 
-	// Create aggregate sum
-	sum := (*apb.MatchSum)(nil)
-	go func() {
-		for sumRow := range sumsChan {
-			if sum == nil {
-				sum = &apb.MatchSum{}
-			}
-			sum = addMatchSums(sum, sumRow)
-		}
-	}()
-
-	// Terminate when all sums are fetched
-	wg.Wait()
-	close(sumsChan)
-
 	// Return sum and error
-	return sum, fetchErr
+	return sum, nil
 }
 
 func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {

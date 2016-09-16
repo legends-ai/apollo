@@ -1,16 +1,9 @@
 package models
 
-import (
-	"time"
-
-	apb "github.com/asunaio/apollo/gen-go/asuna"
-)
+import apb "github.com/asunaio/apollo/gen-go/asuna"
 
 // makeQuotient creates a MatchQuotient from a MatchSum.
 func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
-	// TODO(igm): fix race condition
-	time.Sleep(1 * time.Millisecond)
-
 	scalars := sum.Scalars
 	plays := float64(scalars.Plays)
 	dd := sum.DurationDistribution
