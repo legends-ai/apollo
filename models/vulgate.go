@@ -122,7 +122,7 @@ func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
 
 func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
 	// TODO(pradyuman): implement
-	return nil
+	return &apb.Vulgate_PatchTime{}
 }
 
 func (v *vulgateImpl) GetChampionIDs() []uint32 {

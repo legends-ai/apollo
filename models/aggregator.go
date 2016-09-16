@@ -59,6 +59,12 @@ func (a *aggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map
 		if err != nil {
 			return nil, err
 		}
+
+		// no nil champs
+		if champ == nil {
+			continue
+		}
+
 		champions[id] = champ
 	}
 	return champions, nil
@@ -81,6 +87,12 @@ func (a *aggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb
 		if err != nil {
 			return nil, err
 		}
+
+		// no nil champs
+		if champ == nil {
+			continue
+		}
+
 		roles[role] = champ
 	}
 

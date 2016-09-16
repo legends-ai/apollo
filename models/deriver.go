@@ -227,6 +227,12 @@ func appendDeltas(dqs groupedDeltaQuotients, ds *apb.MatchQuotient_Deltas_Delta)
 // deserializeBonusSet works for masteries, runes, and keystones.
 func deserializeBonusSet(s string) (map[uint32]uint32, error) {
 	ret := map[uint32]uint32{}
+
+	// no runes
+	if len(s) == 0 {
+		return ret, nil
+	}
+
 	// get rune counts
 	rs := strings.Split(s, "|")
 	for _, r := range rs {
@@ -241,6 +247,11 @@ func deserializeBonusSet(s string) (map[uint32]uint32, error) {
 }
 
 func deserializeBonusSetElement(s string) (uint32, uint32, error) {
+	// No element
+	if s == "" {
+		return 0, 0, nil
+	}
+
 	// get data of rune count
 	ps := strings.Split(s, ":")
 
@@ -331,9 +342,13 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	for ks, kstats := range quot.Keystones {
 		// ks is keystone string
 		// kstats is keystone subscalars
-		keystone, _, err := deserializeBonusSetElement(ks)
+		keystone, ct, err := deserializeBonusSetElement(ks)
 		if err != nil {
 			return nil, fmt.Errorf("could not deserialize keystone: %v", err)
+		}
+		if ct == 0 {
+			// check for nil keystone
+			continue
 		}
 		keystones = append(keystones, &apb.MatchAggregateCollections_Keystone{
 			Keystone: keystone,
