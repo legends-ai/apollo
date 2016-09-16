@@ -24,8 +24,14 @@ func NewDeriver() Deriver {
 type deriverImpl struct{}
 
 func (d *deriverImpl) Derive(quots map[uint32]*apb.MatchQuotient, id uint32) (*apb.MatchAggregate, error) {
+	collections, err := makeMatchAggregateCollections(quots[id])
+	if err != nil {
+		return nil, fmt.Errorf("error parsing collections: %v", err)
+	}
+
 	return &apb.MatchAggregate{
-		Statistics: makeMatchAggregateStatistics(quots, id),
+		Statistics:  makeMatchAggregateStatistics(quots, id),
+		Collections: collections,
 	}, nil
 }
 
@@ -213,24 +219,32 @@ func deserializeBonusSet(s string) (map[uint32]uint32, error) {
 	// get rune counts
 	rs := strings.Split(s, "|")
 	for _, r := range rs {
-		// get data of rune count
-		ps := strings.Split(r, ":")
-
-		// rune id
-		id, err := strconv.Atoi(ps[0])
-
-		// rune count
-		ct, err := strconv.Atoi(ps[2])
-
-		// check for strconv errors
+		id, ct, err := deserializeBonusSetElement(r)
 		if err != nil {
 			return nil, err
 		}
-
 		// assign
 		ret[uint32(id)] = uint32(ct)
 	}
 	return ret, nil
+}
+
+func deserializeBonusSetElement(s string) (uint32, uint32, error) {
+	// get data of rune count
+	ps := strings.Split(s, ":")
+
+	// rune id
+	id, err := strconv.Atoi(ps[0])
+
+	// rune count
+	ct, err := strconv.Atoi(ps[2])
+
+	// check for strconv errors
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return uint32(id), uint32(ct), nil
 }
 
 // deserializeSummoners deserializes the summoners key
@@ -262,4 +276,66 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 		}
 	}
 	return ret, nil
+}
+
+func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregateCollections, error) {
+	// derive runes
+	var runes []*apb.MatchAggregateCollections_RuneSet
+	for rs, rstats := range quot.Runes {
+		// rs is rune set string
+		// rstats is rune set subscalars
+		runeSet, err := deserializeBonusSet(rs)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize rune set: %v", err)
+		}
+		runes = append(runes, &apb.MatchAggregateCollections_RuneSet{
+			Runes:    runeSet,
+			PickRate: rstats.Plays,
+			WinRate:  rstats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(rstats.Plays * quot.Scalars.Plays),
+		})
+	}
+
+	// derive masteries
+	var masteries []*apb.MatchAggregateCollections_MasterySet
+	for ms, mstats := range quot.Masteries {
+		// ms is mastery set string
+		// mstats is mastery set subscalars
+		masterySet, err := deserializeBonusSet(ms)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize mastery set: %v", err)
+		}
+		masteries = append(masteries, &apb.MatchAggregateCollections_MasterySet{
+			Masteries: masterySet,
+			PickRate:  mstats.Plays,
+			WinRate:   mstats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(mstats.Plays * quot.Scalars.Plays),
+		})
+	}
+
+	// derive keystones
+	var keystones []*apb.MatchAggregateCollections_Keystone
+	for ks, kstats := range quot.Keystones {
+		// ks is keystone string
+		// kstats is keystone subscalars
+		keystone, _, err := deserializeBonusSetElement(ks)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize keystone: %v", err)
+		}
+		keystones = append(keystones, &apb.MatchAggregateCollections_Keystone{
+			Keystone: keystone,
+			PickRate: kstats.Plays,
+			WinRate:  kstats.Wins,
+			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
+			NumMatches: uint32(kstats.Plays * quot.Scalars.Plays),
+		})
+	}
+
+	return &apb.MatchAggregateCollections{
+		Runes:     runes,
+		Masteries: masteries,
+		Keystones: keystones,
+	}, nil
 }
