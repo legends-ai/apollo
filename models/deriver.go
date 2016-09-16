@@ -195,7 +195,7 @@ func deriveStatistic(vals []float64, val float64) *apb.MatchAggregateStatistics_
 	avg := sum / float64(len(vals))
 
 	// sort desc so we can get the rank
-	sort.Sort(sort.Reverse(sort.Float64Slice(vals)))
+	sort.Sort(sort.Float64Slice(vals))
 	var rank int
 	for idx, v := range vals {
 		if v == val {
