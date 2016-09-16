@@ -33,31 +33,65 @@ type AggregatorImpl struct {
 
 // Aggregate aggregates.
 func (a *AggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
-	quots := map[uint32]*apb.MatchQuotient{}
-	for _, id := range a.Vulgate.GetChampionIDs() {
-		quot, err := a.findChampionQuotient(req, id)
-		if err != nil {
-			return nil, err
-		}
-		quots[id] = quot
+	champions, err := a.findChampionQuotients(req)
+	if err != nil {
+		return nil, fmt.Errorf("error finding champion quotients: %v", err)
+	}
+
+	roles, err := a.findRoleQuotients(req)
+	if err != nil {
+		return nil, fmt.Errorf("error finding role quotients: %v", err)
 	}
 
 	// now let us build the match aggregate
-	return a.Deriver.Derive(quots, req.ChampionId)
+	return a.Deriver.Derive(champions, roles, req.ChampionId)
 }
 
-func (a *AggregatorImpl) findChampionQuotient(req *apb.GetChampionRequest, cid uint32) (*apb.MatchQuotient, error) {
-	f := a.buildFilters(req, cid)
-	return a.deriveQuotient(f)
+func (a *AggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
+	champions := map[uint32]*apb.MatchQuotient{}
+	for _, id := range a.Vulgate.GetChampionIDs() {
+		copy := *req
+		copy.ChampionId = id
+		f := a.buildFilters(&copy)
+		champ, err := a.deriveQuotient(f)
+		if err != nil {
+			return nil, err
+		}
+		champions[id] = champ
+	}
+	return champions, nil
+}
+
+func (a *AggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb.Role]*apb.MatchQuotient, error) {
+	roles := map[apb.Role]*apb.MatchQuotient{}
+
+	for _, role := range []apb.Role{
+		apb.Role_TOP,
+		apb.Role_JUNGLE,
+		apb.Role_MID,
+		apb.Role_BOT,
+		apb.Role_SUPPORT,
+	} {
+		copy := *req
+		copy.Role = role
+		f := a.buildFilters(&copy)
+		champ, err := a.deriveQuotient(f)
+		if err != nil {
+			return nil, err
+		}
+		roles[role] = champ
+	}
+
+	return roles, nil
 }
 
 // buildFilters builds a list of filters for a given champion.
-func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest, cid uint32) []*apb.MatchFilters {
+func (a *AggregatorImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchFilters {
 	var ret []*apb.MatchFilters
 	for _, patch := range a.Vulgate.FindPatches(req.Patch) {
 		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
 			ret = append(ret, &apb.MatchFilters{
-				ChampionId: int32(cid),
+				ChampionId: int32(req.ChampionId),
 				EnemyId:    ANY_ENEMY,
 				Patch:      patch,
 				Tier:       tier,

@@ -13,7 +13,11 @@ import (
 // This does not need its own class, but there's so much code that this makes sense.
 type Deriver interface {
 	// Derive derives a MatchAggregate from a map of MatchQuotients and a champion id.
-	Derive(quots map[uint32]*apb.MatchQuotient, id uint32) (*apb.MatchAggregate, error)
+	// - Champions is a map of all champions to their match quotient for the current role
+	// - Roles is a map of all roles of the current champion
+	Derive(
+		champions map[uint32]*apb.MatchQuotient, roles map[apb.Role]*apb.MatchQuotient, id uint32,
+	) (*apb.MatchAggregate, error)
 }
 
 // NewDeriver constructs a new Deriver.
@@ -23,14 +27,16 @@ func NewDeriver() Deriver {
 
 type deriverImpl struct{}
 
-func (d *deriverImpl) Derive(quots map[uint32]*apb.MatchQuotient, id uint32) (*apb.MatchAggregate, error) {
-	collections, err := makeMatchAggregateCollections(quots[id])
+func (d *deriverImpl) Derive(
+	champions map[uint32]*apb.MatchQuotient, roles map[apb.Role]*apb.MatchQuotient, id uint32,
+) (*apb.MatchAggregate, error) {
+	collections, err := makeMatchAggregateCollections(champions[id])
 	if err != nil {
 		return nil, fmt.Errorf("error parsing collections: %v", err)
 	}
 
 	return &apb.MatchAggregate{
-		Statistics:  makeMatchAggregateStatistics(quots, id),
+		Statistics:  makeMatchAggregateStatistics(champions, id),
 		Collections: collections,
 	}, nil
 }
