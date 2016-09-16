@@ -142,6 +142,7 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 
 		// Process sum
 		if s != nil {
+			s = normalizeMatchSum(s)
 			if sum == nil {
 				sum = s
 			} else {
@@ -155,8 +156,6 @@ func (a *aggregatorImpl) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
 }
 
 func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {
-	normalizeMatchSum(a)
-	normalizeMatchSum(b)
 	return &apb.MatchSum{
 		Scalars: &apb.MatchSum_Scalars{
 			Plays:                    a.Scalars.Plays + b.Scalars.Plays,
