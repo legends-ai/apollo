@@ -106,6 +106,9 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 	for _, quot := range quots {
 		// Scalars
 		gs.scalars.winRate = append(gs.scalars.winRate, quot.Scalars.Wins)
+		// TODO(igm): optimize this
+		gs.scalars.pickRate = append(gs.scalars.pickRate, calculatePickRate(quots, id))
+		gs.scalars.banRate = append(gs.scalars.banRate, calculateBanRate(quots, id))
 		gs.scalars.gamesPlayed = append(gs.scalars.gamesPlayed, quot.Scalars.Plays)
 		gs.scalars.goldEarned = append(gs.scalars.goldEarned, quot.Scalars.GoldEarned)
 		gs.scalars.kills = append(gs.scalars.kills, quot.Scalars.Kills)
@@ -434,7 +437,7 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	}, nil
 }
 
-func calculatePickRate(champions map[string]*apb.MatchQuotient, id uint32) float64 {
+func calculatePickRate(champions map[uint32]*apb.MatchQuotient, id uint32) float64 {
 	var plays float64
 	var champPlays float64
 	for _, quot := range champions {
@@ -450,7 +453,7 @@ func calculatePickRate(champions map[string]*apb.MatchQuotient, id uint32) float
 	return champPlays / plays
 }
 
-func calculateBanRate(champions map[string]*apb.MatchQuotient, id uint32) float64 {
+func calculateBanRate(champions map[uint32]*apb.MatchQuotient, id uint32) float64 {
 	var bans float64
 	var champBans float64
 	for _, quot := range champions {
