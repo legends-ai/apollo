@@ -274,6 +274,22 @@ func normalizeMatchSum(p *apb.MatchSum) {
 	if p.DurationDistribution == nil {
 		p.DurationDistribution = &apb.MatchSum_DurationDistribution{}
 	}
+
+	if p.Durations == nil {
+		p.Durations = map[uint32]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Bans == nil {
+		p.Bans = map[uint32]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Allies == nil {
+		p.Allies = map[uint32]*apb.MatchSum_Subscalars{}
+	}
+
+	if p.Enemies == nil {
+		p.Enemies = map[uint32]*apb.MatchSum_Subscalars{}
+	}
 }
 
 func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.MatchSum_Deltas_Delta {
