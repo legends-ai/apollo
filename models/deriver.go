@@ -18,7 +18,7 @@ type Deriver interface {
 	Derive(
 		champions map[uint32]*apb.MatchQuotient,
 		roles map[apb.Role]*apb.MatchQuotient,
-		patches map[string]*apb.MatchQuotient,
+		patches map[string]map[uint32]*apb.MatchQuotient,
 		id uint32,
 	) (*apb.MatchAggregate, error)
 }
@@ -33,7 +33,7 @@ type deriverImpl struct{}
 func (d *deriverImpl) Derive(
 	champions map[uint32]*apb.MatchQuotient,
 	roles map[apb.Role]*apb.MatchQuotient,
-	patches map[string]*apb.MatchQuotient,
+	patches map[string]map[uint32]*apb.MatchQuotient,
 	id uint32,
 ) (*apb.MatchAggregate, error) {
 	// precondition -- champ must exist
@@ -48,7 +48,7 @@ func (d *deriverImpl) Derive(
 
 	return &apb.MatchAggregate{
 		Statistics:  makeMatchAggregateStatistics(champions, id),
-		Graphs:      makeMatchAggregateGraphs(champions, id),
+		Graphs:      makeMatchAggregateGraphs(champions, patches, id),
 		Collections: collections,
 	}, nil
 }
@@ -313,7 +313,10 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 	}
 	return ret, nil
 }
-func makeMatchAggregateGraphs(champions map[uint32]*apb.MatchQuotient, id uint32) *apb.MatchAggregateGraphs {
+func makeMatchAggregateGraphs(
+	champions map[uint32]*apb.MatchQuotient,
+	patches map[string]map[uint32]*apb.MatchQuotient, id uint32,
+) *apb.MatchAggregateGraphs {
 	winRate := map[uint32]float64{}
 	pickRate := map[uint32]float64{}
 	banRate := map[uint32]float64{}
@@ -328,6 +331,21 @@ func makeMatchAggregateGraphs(champions map[uint32]*apb.MatchQuotient, id uint32
 		WinRate:  winRate,
 		PickRate: pickRate,
 		BanRate:  banRate,
+	}
+
+	var byPatch []*apb.MatchAggregateGraphs_ByPatch
+	for patch, championsOfPatch := range patches {
+		self := championsOfPatch[id]
+		winRate := 0.0
+		if self != nil {
+			winRate = self.Scalars.Wins
+		}
+		byPatch = append(byPatch, &apb.MatchAggregateGraphs_ByPatch{
+			Patch:    patch,
+			WinRate:  winRate,
+			PickRate: calculatePickRate(championsOfPatch, id),
+			BanRate:  calculateBanRate(championsOfPatch, id),
+		})
 	}
 
 	quot := champions[id]

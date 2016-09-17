@@ -104,36 +104,47 @@ func (a *aggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb
 	return roles, nil
 }
 
-func (a *aggregatorImpl) findPatchQuotients(req *apb.GetChampionRequest) (map[string]*apb.MatchQuotient, error) {
-	patches := map[string]*apb.MatchQuotient{}
+func (a *aggregatorImpl) findPatchQuotients(
+	req *apb.GetChampionRequest,
+) (map[string]map[uint32]*apb.MatchQuotient, error) {
+	patches := map[string]map[uint32]*apb.MatchQuotient{}
 
 	// build patch filters
 	for _, patch := range a.Vulgate.FindNPreviousPatches(req.Patch, 5) {
 
-		// Construct filters
-		var f []*apb.MatchFilters
-		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
-			f = append(f, &apb.MatchFilters{
-				ChampionId: int32(req.ChampionId),
-				EnemyId:    ANY_ENEMY,
-				Patch:      patch,
-				Tier:       tier,
-				Region:     req.Region,
-				Role:       req.Role,
-			})
+		// build champion filters
+		champions := map[uint32]*apb.MatchQuotient{}
+		for _, id := range a.Vulgate.GetChampionIDs() {
+			copy := *req
+			copy.ChampionId = id
+
+			// Construct filters
+			var f []*apb.MatchFilters
+			for _, tier := range a.Vulgate.FindTiers(req.Tier) {
+				f = append(f, &apb.MatchFilters{
+					ChampionId: int32(req.ChampionId),
+					EnemyId:    ANY_ENEMY,
+					Patch:      patch,
+					Tier:       tier,
+					Region:     req.Region,
+					Role:       req.Role,
+				})
+			}
+
+			champ, err := a.deriveQuotient(f)
+			if err != nil {
+				return nil, err
+			}
+
+			// no nil champs
+			if champ == nil {
+				continue
+			}
+
+			champions[id] = champ
 		}
 
-		quot, err := a.deriveQuotient(f)
-		if err != nil {
-			return nil, err
-		}
-
-		// no nil quotients
-		if quot == nil {
-			continue
-		}
-
-		patches[patch] = quot
+		patches[patch] = champions
 	}
 
 	return patches, nil
