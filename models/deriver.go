@@ -311,11 +311,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 			return nil, fmt.Errorf("could not deserialize rune set: %v", err)
 		}
 		runes = append(runes, &apb.MatchAggregateCollections_RuneSet{
-			Runes:    runeSet,
-			PickRate: rstats.Plays,
-			WinRate:  rstats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(rstats.Plays * quot.Scalars.Plays),
+			Runes:      runeSet,
+			PickRate:   rstats.Plays,
+			WinRate:    rstats.Wins,
+			NumMatches: uint32(rstats.PlayCount),
 		})
 	}
 
@@ -329,11 +328,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 			return nil, fmt.Errorf("could not deserialize mastery set: %v", err)
 		}
 		masteries = append(masteries, &apb.MatchAggregateCollections_MasterySet{
-			Masteries: masterySet,
-			PickRate:  mstats.Plays,
-			WinRate:   mstats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(mstats.Plays * quot.Scalars.Plays),
+			Masteries:  masterySet,
+			PickRate:   mstats.Plays,
+			WinRate:    mstats.Wins,
+			NumMatches: uint32(mstats.PlayCount),
 		})
 	}
 
@@ -351,11 +349,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 			continue
 		}
 		keystones = append(keystones, &apb.MatchAggregateCollections_Keystone{
-			Keystone: keystone,
-			PickRate: kstats.Plays,
-			WinRate:  kstats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(kstats.Plays * quot.Scalars.Plays),
+			Keystone:   keystone,
+			PickRate:   kstats.Plays,
+			WinRate:    kstats.Wins,
+			NumMatches: uint32(kstats.PlayCount),
 		})
 	}
 
@@ -369,12 +366,11 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 			return nil, fmt.Errorf("could not deserialize summoners: %v", err)
 		}
 		summonerSpells = append(summonerSpells, &apb.MatchAggregateCollections_SummonerSet{
-			Spell1:   spell1,
-			Spell2:   spell2,
-			PickRate: sstats.Plays,
-			WinRate:  sstats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(sstats.Plays * quot.Scalars.Plays),
+			Spell1:     spell1,
+			Spell2:     spell2,
+			PickRate:   sstats.Plays,
+			WinRate:    sstats.Wins,
+			NumMatches: uint32(sstats.PlayCount),
 		})
 	}
 
@@ -383,11 +379,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	for trinket, tstats := range quot.Trinkets {
 		// tstats is trinket subscalars
 		trinkets = append(trinkets, &apb.MatchAggregateCollections_Trinket{
-			Trinket:  trinket,
-			PickRate: tstats.Plays,
-			WinRate:  tstats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(tstats.Plays * quot.Scalars.Plays),
+			Trinket:    trinket,
+			PickRate:   tstats.Plays,
+			WinRate:    tstats.Wins,
+			NumMatches: uint32(tstats.PlayCount),
 		})
 	}
 
@@ -403,8 +398,7 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 			SkillOrder: so,
 			PickRate:   sostats.Plays,
 			WinRate:    sostats.Wins,
-			// rederive number of plays. TOOD(igm): preserve original number of matches instead of imprecise floating point bullshit
-			NumMatches: uint32(sostats.Plays * quot.Scalars.Plays),
+			NumMatches: uint32(sostats.PlayCount),
 		})
 	}
 

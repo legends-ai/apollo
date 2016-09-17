@@ -65,8 +65,9 @@ func makeQuotientDeltas(deltas *apb.MatchSum_Deltas_Delta, dd *apb.MatchSum_Dura
 // makeQuotientSubscalars calculates subscalars
 func makeQuotientSubscalars(ss *apb.MatchSum_Subscalars, plays float64) *apb.MatchQuotient_Subscalars {
 	return &apb.MatchQuotient_Subscalars{
-		Plays: float64(ss.Plays) / plays,
-		Wins:  float64(ss.Wins) / float64(ss.Plays),
+		Plays:     float64(ss.Plays) / plays,
+		Wins:      float64(ss.Wins) / float64(ss.Plays),
+		PlayCount: ss.Plays,
 	}
 }
 
