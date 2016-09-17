@@ -16,7 +16,10 @@ type Deriver interface {
 	// - Champions is a map of all champions to their match quotient for the current role
 	// - Roles is a map of all roles of the current champion
 	Derive(
-		champions map[uint32]*apb.MatchQuotient, roles map[apb.Role]*apb.MatchQuotient, id uint32,
+		champions map[uint32]*apb.MatchQuotient,
+		roles map[apb.Role]*apb.MatchQuotient,
+		patches map[string]*apb.MatchQuotient,
+		id uint32,
 	) (*apb.MatchAggregate, error)
 }
 
@@ -28,7 +31,10 @@ func NewDeriver() Deriver {
 type deriverImpl struct{}
 
 func (d *deriverImpl) Derive(
-	champions map[uint32]*apb.MatchQuotient, roles map[apb.Role]*apb.MatchQuotient, id uint32,
+	champions map[uint32]*apb.MatchQuotient,
+	roles map[apb.Role]*apb.MatchQuotient,
+	patches map[string]*apb.MatchQuotient,
+	id uint32,
 ) (*apb.MatchAggregate, error) {
 	// precondition -- champ must exist
 	if champions[id] == nil {

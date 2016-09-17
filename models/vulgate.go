@@ -34,6 +34,9 @@ type Vulgate interface {
 
 	// GetChampionIDs gets a list of champion ids.
 	GetChampionIDs() []uint32
+
+	// FindNPreviousPatches finds the n previous patches (including given)
+	FindNPreviousPatches(rg *apb.PatchRange, n int) []string
 }
 
 // NewVulgate initializes the Vulgate.
@@ -131,4 +134,39 @@ func (v *vulgateImpl) GetChampionIDs() []uint32 {
 		ret = append(ret, id)
 	}
 	return ret
+}
+
+func (v *vulgateImpl) FindNPreviousPatches(rg *apb.PatchRange, n int) []string {
+	startIdx := -1
+	endIdx := -1
+
+	for i, p := range v.proto.Patches {
+		if p == rg.Min {
+			startIdx = i
+		}
+		if p == rg.Max {
+			endIdx = i
+			break
+		}
+	}
+
+	if endIdx < startIdx {
+		// wtf?
+		return []string{v.proto.Patches[len(v.proto.Patches)-1]}
+	}
+
+	start := endIdx - n
+	if startIdx == -1 || start < 0 {
+		start = 0
+	}
+	if startIdx < start {
+		start = startIdx
+	}
+
+	end := endIdx + 1
+	if endIdx == -1 {
+		end = len(v.proto.Patches) - 1
+	}
+
+	return v.proto.Patches[start:end]
 }

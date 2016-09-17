@@ -34,6 +34,7 @@ type aggregatorImpl struct {
 
 // Aggregate aggregates.
 func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
+	// TODO(igm): optimize these calls. We have quite a few duplicates.
 	champions, err := a.findChampionQuotients(req)
 	if err != nil {
 		return nil, fmt.Errorf("error finding champion quotients: %v", err)
@@ -44,8 +45,13 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 		return nil, fmt.Errorf("error finding role quotients: %v", err)
 	}
 
+	patches, err := a.findPatchQuotients(req)
+	if err != nil {
+		return nil, fmt.Errorf("error finding patch quotients: %v", err)
+	}
+
 	// now let us build the match aggregate
-	return a.Deriver.Derive(champions, roles, req.ChampionId)
+	return a.Deriver.Derive(champions, roles, patches, req.ChampionId)
 }
 
 func (a *aggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
@@ -96,6 +102,41 @@ func (a *aggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb
 	}
 
 	return roles, nil
+}
+
+func (a *aggregatorImpl) findPatchQuotients(req *apb.GetChampionRequest) (map[string]*apb.MatchQuotient, error) {
+	patches := map[string]*apb.MatchQuotient{}
+
+	// build patch filters
+	for _, patch := range a.Vulgate.FindNPreviousPatches(req.Patch, 5) {
+
+		// Construct filters
+		var f []*apb.MatchFilters
+		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
+			f = append(f, &apb.MatchFilters{
+				ChampionId: int32(req.ChampionId),
+				EnemyId:    ANY_ENEMY,
+				Patch:      patch,
+				Tier:       tier,
+				Region:     req.Region,
+				Role:       req.Role,
+			})
+		}
+
+		quot, err := a.deriveQuotient(f)
+		if err != nil {
+			return nil, err
+		}
+
+		// no nil quotients
+		if quot == nil {
+			continue
+		}
+
+		patches[patch] = quot
+	}
+
+	return patches, nil
 }
 
 // buildFilters builds a list of filters for a given champion.
