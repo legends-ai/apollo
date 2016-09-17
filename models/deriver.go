@@ -42,7 +42,7 @@ func (d *deriverImpl) Derive(
 
 	return &apb.MatchAggregate{
 		Statistics:  makeMatchAggregateStatistics(champions, id),
-		Graphs:      makeMatchAggregateGraphs(champions[id]),
+		Graphs:      makeMatchAggregateGraphs(champions, id),
 		Collections: collections,
 	}, nil
 }
@@ -307,7 +307,24 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 	}
 	return ret, nil
 }
-func makeMatchAggregateGraphs(quot *apb.MatchQuotient) *apb.MatchAggregateGraphs {
+func makeMatchAggregateGraphs(champions map[uint32]*apb.MatchQuotient, id uint32) *apb.MatchAggregateGraphs {
+	winRate := map[uint32]float64{}
+	pickRate := map[uint32]float64{}
+	banRate := map[uint32]float64{}
+
+	for cid, champ := range champions {
+		winRate[cid] = champ.Scalars.Wins
+		pickRate[cid] = calculatePickRate(champions, cid)
+		banRate[cid] = calculateBanRate(champions, cid)
+	}
+
+	distribution := &apb.MatchAggregateGraphs_Distribution{
+		WinRate:  winRate,
+		PickRate: pickRate,
+		BanRate:  banRate,
+	}
+
+	quot := champions[id]
 	var byGameLength []*apb.MatchAggregateGraphs_ByGameLength
 	for duration, stats := range quot.Durations {
 		byGameLength = append(byGameLength, &apb.MatchAggregateGraphs_ByGameLength{
@@ -320,6 +337,7 @@ func makeMatchAggregateGraphs(quot *apb.MatchQuotient) *apb.MatchAggregateGraphs
 	}
 
 	return &apb.MatchAggregateGraphs{
+		Distribution:   distribution,
 		ByGameLength:   byGameLength,
 		PhysicalDamage: quot.Scalars.PhysicalDamage,
 		MagicDamage:    quot.Scalars.MagicDamage,
