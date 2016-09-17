@@ -384,6 +384,10 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 		Summoners:   makeQuotientSubscalarStringMap(sum.Summoners, plays),
 		Trinkets:    makeQuotientSubscalarUint32Map(sum.Trinkets, plays),
 		SkillOrders: makeQuotientSubscalarStringMap(sum.SkillOrders, plays),
+		Durations:   makeQuotientSubscalarUint32Map(sum.Durations, plays),
+		Bans:        makeQuotientSubscalarUint32Map(sum.Bans, plays),
+		Allies:      makeQuotientSubscalarUint32Map(sum.Allies, plays),
+		Enemies:     makeQuotientSubscalarUint32Map(sum.Enemies, plays),
 	}
 }
 
