@@ -203,6 +203,10 @@ func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {
 			TwentyToThirty: a.DurationDistribution.TwentyToThirty + b.DurationDistribution.TwentyToThirty,
 			ThirtyToEnd:    a.DurationDistribution.ThirtyToEnd + b.DurationDistribution.ThirtyToEnd,
 		},
+		Durations: addUint32SubscalarsMap(a.Durations, b.Durations),
+		Bans:      addUint32SubscalarsMap(a.Bans, b.Bans),
+		Allies:    addUint32SubscalarsMap(a.Allies, b.Allies),
+		Enemies:   addUint32SubscalarsMap(a.Enemies, b.Enemies),
 	}
 }
 
