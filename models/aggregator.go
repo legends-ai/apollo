@@ -115,14 +115,12 @@ func (a *aggregatorImpl) findPatchQuotients(
 		// build champion filters
 		champions := map[uint32]*apb.MatchQuotient{}
 		for _, id := range a.Vulgate.GetChampionIDs() {
-			copy := *req
-			copy.ChampionId = id
 
 			// Construct filters
 			var f []*apb.MatchFilters
 			for _, tier := range a.Vulgate.FindTiers(req.Tier) {
 				f = append(f, &apb.MatchFilters{
-					ChampionId: int32(req.ChampionId),
+					ChampionId: int32(id),
 					EnemyId:    ANY_ENEMY,
 					Patch:      patch,
 					Tier:       tier,

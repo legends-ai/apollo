@@ -362,6 +362,7 @@ func makeMatchAggregateGraphs(
 
 	return &apb.MatchAggregateGraphs{
 		Distribution:   distribution,
+		ByPatch:        byPatch,
 		ByGameLength:   byGameLength,
 		PhysicalDamage: quot.Scalars.PhysicalDamage,
 		MagicDamage:    quot.Scalars.MagicDamage,
