@@ -102,13 +102,15 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 	// grouped quotient aggregates
 	var gs groupedQuotients
 	self := quots[id]
+	selfPick := calculatePickRate(quots, id)
+	selfBan := calculateBanRate(quots, id)
 
-	for _, quot := range quots {
+	for cid, quot := range quots {
 		// Scalars
 		gs.scalars.winRate = append(gs.scalars.winRate, quot.Scalars.Wins)
 		// TODO(igm): optimize this
-		gs.scalars.pickRate = append(gs.scalars.pickRate, calculatePickRate(quots, id))
-		gs.scalars.banRate = append(gs.scalars.banRate, calculateBanRate(quots, id))
+		gs.scalars.pickRate = append(gs.scalars.pickRate, calculatePickRate(quots, cid))
+		gs.scalars.banRate = append(gs.scalars.banRate, calculateBanRate(quots, cid))
 		gs.scalars.gamesPlayed = append(gs.scalars.gamesPlayed, quot.Scalars.Plays)
 		gs.scalars.goldEarned = append(gs.scalars.goldEarned, quot.Scalars.GoldEarned)
 		gs.scalars.kills = append(gs.scalars.kills, quot.Scalars.Kills)
@@ -146,6 +148,8 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 	return &apb.MatchAggregateStatistics{
 		Scalars: &apb.MatchAggregateStatistics_Scalars{
 			WinRate:                  deriveStatistic(gs.scalars.winRate, self.Scalars.Wins),
+			PickRate:                 deriveStatistic(gs.scalars.pickRate, selfPick),
+			BanRate:                  deriveStatistic(gs.scalars.pickRate, selfBan),
 			GamesPlayed:              deriveStatistic(gs.scalars.gamesPlayed, self.Scalars.Plays),
 			GoldEarned:               deriveStatistic(gs.scalars.goldEarned, self.Scalars.GoldEarned),
 			Kills:                    deriveStatistic(gs.scalars.kills, self.Scalars.Kills),
