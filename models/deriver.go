@@ -301,7 +301,20 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 	return ret, nil
 }
 func makeMatchAggregateGraphs(quot *apb.MatchQuotient) *apb.MatchAggregateGraphs {
-	return &apb.MatchAggregateGraphs{}
+	var byGameLength []*apb.MatchAggregateGraphs_ByGameLength
+	for duration, stats := range quot.Durations {
+		byGameLength = append(byGameLength, &apb.MatchAggregateGraphs_ByGameLength{
+			GameLength: &apb.IntRange{
+				Min: duration,
+				Max: duration,
+			},
+			WinRate: stats.Wins,
+		})
+	}
+
+	return &apb.MatchAggregateGraphs{
+		ByGameLength: byGameLength,
+	}
 }
 
 func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregateCollections, error) {
