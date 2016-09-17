@@ -313,7 +313,10 @@ func makeMatchAggregateGraphs(quot *apb.MatchQuotient) *apb.MatchAggregateGraphs
 	}
 
 	return &apb.MatchAggregateGraphs{
-		ByGameLength: byGameLength,
+		ByGameLength:   byGameLength,
+		PhysicalDamage: quot.Scalars.PhysicalDamage,
+		MagicDamage:    quot.Scalars.MagicDamage,
+		TrueDamage:     quot.Scalars.TrueDamage,
 	}
 }
 
