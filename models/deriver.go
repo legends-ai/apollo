@@ -42,6 +42,7 @@ func (d *deriverImpl) Derive(
 
 	return &apb.MatchAggregate{
 		Statistics:  makeMatchAggregateStatistics(champions, id),
+		Graphs:      makeMatchAggregateGraphs(champions[id]),
 		Collections: collections,
 	}, nil
 }
@@ -298,6 +299,9 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 		}
 	}
 	return ret, nil
+}
+func makeMatchAggregateGraphs(quot *apb.MatchQuotient) *apb.MatchAggregateGraphs {
+	return &apb.MatchAggregateGraphs{}
 }
 
 func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregateCollections, error) {
