@@ -433,3 +433,31 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		SkillOrders:    skillOrders,
 	}, nil
 }
+
+func calculatePickRate(champions map[string]*apb.MatchQuotient, id uint32) float64 {
+	var plays float64
+	var champPlays float64
+	for _, quot := range champions {
+		plays += quot.Scalars.Plays
+		if allied := quot.Allies[id]; allied != nil {
+			champPlays += float64(allied.PlayCount)
+		}
+	}
+	// 5 on a team
+	champPlays /= 5
+	// 10 in a game
+	plays /= 10
+	return champPlays / plays
+}
+
+func calculateBanRate(champions map[string]*apb.MatchQuotient, id uint32) float64 {
+	var bans float64
+	var champBans float64
+	for _, quot := range champions {
+		bans += quot.Scalars.Plays
+		if banned := quot.Bans[id]; banned != nil {
+			champBans += float64(banned.PlayCount)
+		}
+	}
+	return champBans / bans
+}
