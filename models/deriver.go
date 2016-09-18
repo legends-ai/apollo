@@ -16,6 +16,7 @@ type Deriver interface {
 	// - Champions is a map of all champions to their match quotient for the current role
 	// - Roles is a map of all roles of the current champion
 	Derive(
+		role apb.Role,
 		champions map[uint32]*apb.MatchQuotient,
 		roles map[apb.Role]*apb.MatchQuotient,
 		patches map[string]map[uint32]*apb.MatchQuotient,
@@ -31,6 +32,7 @@ func NewDeriver() Deriver {
 type deriverImpl struct{}
 
 func (d *deriverImpl) Derive(
+	role apb.Role,
 	champions map[uint32]*apb.MatchQuotient,
 	roles map[apb.Role]*apb.MatchQuotient,
 	patches map[string]map[uint32]*apb.MatchQuotient,
@@ -47,6 +49,7 @@ func (d *deriverImpl) Derive(
 	}
 
 	return &apb.MatchAggregate{
+		Role:        makeMatchAggregateRoles(champions, roles, role, id),
 		Statistics:  makeMatchAggregateStatistics(champions, id),
 		Graphs:      makeMatchAggregateGraphs(champions, patches, id),
 		Collections: collections,
@@ -189,6 +192,39 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 			WardsPlaced:     deriveDeltaStatistic(gs.deltas.wardsPlaced, self.Deltas.WardsPlaced),
 			DamageTaken:     deriveDeltaStatistic(gs.deltas.damageTaken, self.Deltas.DamageTaken),
 		},
+	}
+}
+
+func makeMatchAggregateRoles(
+	champions map[uint32]*apb.MatchQuotient,
+	roles map[apb.Role]*apb.MatchQuotient,
+	role apb.Role, id uint32,
+) *apb.MatchAggregateRoles {
+	var total uint32
+	for _, champ := range champions {
+		if champ.Scalars.Plays != 0 {
+			total++
+		}
+	}
+
+	totalForChamp := 0.0
+	for _, roleQuotient := range roles {
+		totalForChamp += roleQuotient.Scalars.Plays
+	}
+
+	var roleStats []*apb.MatchAggregateRoles_RoleStats
+	for role, roleQuotient := range roles {
+		roleStats = append(roleStats, &apb.MatchAggregateRoles_RoleStats{
+			Role:       role,
+			PickRate:   roleQuotient.Scalars.Plays / totalForChamp,
+			NumMatches: uint32(roleQuotient.Scalars.Plays),
+		})
+	}
+
+	return &apb.MatchAggregateRoles{
+		Role:                 role,
+		TotalChampionsInRole: total,
+		RoleStats:            roleStats,
 	}
 }
 

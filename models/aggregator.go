@@ -51,7 +51,7 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 	}
 
 	// now let us build the match aggregate
-	return a.Deriver.Derive(champions, roles, patches, req.ChampionId)
+	return a.Deriver.Derive(req.Role, champions, roles, patches, req.ChampionId)
 }
 
 func (a *aggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
