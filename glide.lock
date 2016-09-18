@@ -1,0 +1,55 @@
+hash: c0c6e976dc2edc944179db333cf0e1ad8b0e17a78307af3e9c3067fdcd1199aa
+updated: 2016-09-18T05:13:08.166139375-05:00
+imports:
+- name: github.com/gocql/gocql
+  version: 89e1c0f309816323d37394c9f7a4a918301f609f
+  subpackages:
+  - internal/lru
+  - internal/murmur
+  - internal/streams
+- name: github.com/golang/protobuf
+  version: 1f49d83d9aa00e6ce4fc8258c71cc7786aec968a
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
+  - ptypes/timestamp
+- name: github.com/golang/snappy
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
+- name: github.com/hailocab/go-hostpool
+  version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
+- name: github.com/kelseyhightower/envconfig
+  version: 1e291572dcb9ba673cdcdb15e0f422702415ebaf
+- name: github.com/simplyianm/inject
+  version: 0379a29944564e07e61ec76e59221b3f33f214d8
+- name: github.com/Sirupsen/logrus
+  version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
+- name: golang.org/x/net
+  version: 71a035914f99bb58fe82eac0f1289f10963d876c
+  subpackages:
+  - context
+  - http2
+  - http2/hpack
+  - idna
+  - internal/timeseries
+  - lex/httplex
+  - trace
+- name: golang.org/x/sys
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  subpackages:
+  - unix
+- name: google.golang.org/grpc
+  version: 71d2ea4f75286a63b606aca2422cd17ff37fd5b8
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - transport
+- name: gopkg.in/inf.v0
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+testImports: []
