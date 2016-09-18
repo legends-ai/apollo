@@ -25,5 +25,5 @@ docker-build:
 	docker build -t apollo .
 
 docker-push:
-	docker tag apollo:latest 096202052535.dkr.ecr.us-east-1.amazonaws.com/apollo:latest
-	docker push 096202052535.dkr.ecr.us-east-1.amazonaws.com/apollo:latest
+	docker tag apollo:latest 096202052535.dkr.ecr.us-west-2.amazonaws.com/apollo:latest
+	docker push 096202052535.dkr.ecr.us-west-2.amazonaws.com/apollo:latest
