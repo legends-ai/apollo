@@ -56,7 +56,8 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not inject Aggregator: %v", err)
 	}
 
-	_, err = injector.ApplyMap(models.NewChampionDAO())
+	// _, err = injector.ApplyMap(models.NewChampionDAO())
+	_, err = injector.ApplyMap(&models.MockChampionDAO{})
 	if err != nil {
 		logger.Fatalf("Could not inject ChampionDAO: %v", err)
 	}
