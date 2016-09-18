@@ -22,4 +22,4 @@ install: init genproto
 	glide install
 
 docker-build:
-	docker build -t asunaio/apollo .
+	docker build -t apollo .
