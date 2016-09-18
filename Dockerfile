@@ -11,3 +11,9 @@ RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
 	&& mkdir -p /usr/local/glide \
 	&& tar -C /usr/local/glide -xzf glide.tar.gz \
 	&& rm glide.tar.gz
+
+COPY . /go/src/github.com/asunaio/apollo
+
+WORKDIR /go/src/github.com/asunaio/apollo
+
+RUN glide install
