@@ -20,3 +20,9 @@ init:
 
 install: init genproto
 	glide install
+
+docker-build:
+	docker build -t simplyianm/apollo .
+
+docker-push:
+	docker push simplyianm/apollo
