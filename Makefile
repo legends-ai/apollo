@@ -23,6 +23,3 @@ install: init genproto
 
 docker-build:
 	docker build -t simplyianm/apollo .
-
-docker-push:
-	docker push simplyianm/apollo
