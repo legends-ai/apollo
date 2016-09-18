@@ -15,6 +15,9 @@ const (
 type ChampionDAO interface {
 	// Get gets a champion.
 	Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error)
+
+	// GetMatchup gets a matchup.
+	GetMatchup(ctx context.Context, req *apb.GetMatchupRequest) (*apb.Matchup, error)
 }
 
 // NewChampionDAO returns a new ChampionDAO.
@@ -47,4 +50,8 @@ func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) 
 		},
 		MatchAggregate: agg,
 	}, nil
+}
+
+func (c *championDAOImpl) GetMatchup(ctx context.Context, req *apb.GetMatchupRequest) (*apb.Matchup, error) {
+	return &apb.Matchup{}, nil
 }

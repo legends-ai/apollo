@@ -18,12 +18,15 @@ func (s *Server) GetChampion(ctx context.Context, in *apb.GetChampionRequest) (*
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "could not get champion: %v", err)
 	}
-
 	return champion, nil
 }
 
 func (s *Server) GetMatchup(ctx context.Context, in *apb.GetMatchupRequest) (*apb.Matchup, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "GetMatchup unimplemented")
+	matchup, err := s.Champions.GetMatchup(ctx, in)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Internal, "could not get matchup: %v", err)
+	}
+	return matchup, nil
 }
 
 func (s *Server) GetProfile(ctx context.Context, in *apb.GetProfileRequest) (*apb.Profile, error) {
