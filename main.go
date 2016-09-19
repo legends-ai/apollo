@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/inject"
@@ -40,6 +41,15 @@ func initServer(injector inject.Injector, logger *logrus.Logger, config *config.
 	if err != nil {
 		logger.Fatalf("Could not inject server: %v", err)
 	}
+
+	go func() {
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+		healthPort := fmt.Sprintf(":%d", config.HealthPort)
+		logger.Infof("Health listening on %s", healthPort)
+		http.ListenAndServe(healthPort, nil)
+	}()
 
 	apb.RegisterApolloServer(s, serv)
 	logger.Infof("Listening on %s", port)

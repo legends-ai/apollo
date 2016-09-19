@@ -9,6 +9,7 @@ import (
 // AppConfig represents the application config
 type AppConfig struct {
 	Port       int      `required:"true" default:"4834"`
+	HealthPort int      `required:"true" default:"9834"`
 	DBHost     []string `default:"127.0.0.1"`
 	DBKeyspace string   `default:"athena"`
 }
