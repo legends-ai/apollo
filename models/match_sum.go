@@ -17,12 +17,42 @@ const (
 			tier = ? AND region = ? AND role = ?`
 )
 
+const (
+	ANY_CHAMPION = -1
+
+	// Number of previous patches to fetch.
+	prevPatches = 5
+)
+
 type MatchSumDAO interface {
 	// Get gets a MatchSum from MatchFilters.
 	Get(f *apb.MatchFilters) (*apb.MatchSum, error)
 
 	// Sum sums MatchSums derived from the given filters.
 	Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error)
+
+	// SumsOfChampions gets the sums of champions per patch.
+	SumsOfChampions(
+		patchRange *apb.PatchRange, tiers *apb.TierRange, region apb.Region, role apb.Role,
+	) (map[uint32]map[string]*apb.MatchSum, error)
+
+	// SumsOfPatches gets the sums of a champion for a range of patches.
+	SumsOfPatches(
+		patchRange *apb.PatchRange, champion uint32, enemy int32,
+		tiers *apb.TierRange, region apb.Region, role apb.Role,
+	) (map[string]*apb.MatchSum, error)
+
+	// SumOfPatch gets the sum of a champion for a patch.
+	SumOfPatch(
+		patch string, champion uint32, enemy int32,
+		tiers *apb.TierRange, region apb.Region, role apb.Role,
+	) (*apb.MatchSum, error)
+
+	// SumsOfRoles gets the sums of a champion per role for a patch.
+	SumsOfRoles(
+		patch string, champion uint32, enemy int32,
+		tiers *apb.TierRange, region apb.Region,
+	) (map[apb.Role]*apb.MatchSum, error)
 }
 
 // NewMatchSumDAO constructs a new MatchSumDAO.
@@ -31,7 +61,8 @@ func NewMatchSumDAO() MatchSumDAO {
 }
 
 type matchSumDAO struct {
-	CQL *gocql.Session `inject:"t"`
+	CQL     *gocql.Session `inject:"t"`
+	Vulgate Vulgate        `inject:"t"`
 }
 
 func (a *matchSumDAO) Get(f *apb.MatchFilters) (*apb.MatchSum, error) {
@@ -80,6 +111,84 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 
 	// Return sum and error
 	return sum, nil
+}
+
+func (m *matchSumDAO) SumsOfChampions(
+	patchRange *apb.PatchRange, tiers *apb.TierRange, region apb.Region, role apb.Role,
+) (map[uint32]map[string]*apb.MatchSum, error) {
+	ret := map[uint32]map[string]*apb.MatchSum{}
+	for _, id := range m.Vulgate.GetChampionIDs() {
+		patches, err := m.SumsOfPatches(patchRange, id, ANY_CHAMPION, tiers, region, role)
+		if err != nil {
+			return nil, err
+		}
+		ret[id] = patches
+	}
+	return ret, nil
+}
+
+func (m *matchSumDAO) SumsOfPatches(
+	patchRange *apb.PatchRange, champion uint32, enemy int32,
+	tiers *apb.TierRange, region apb.Region, role apb.Role,
+) (map[string]*apb.MatchSum, error) {
+	ret := map[string]*apb.MatchSum{}
+	// TODO(igm): make prev patches configurable
+	for _, patch := range m.Vulgate.FindNPreviousPatches(patchRange, prevPatches) {
+		sum, err := m.SumOfPatch(patch, champion, enemy, tiers, region, role)
+		if err != nil {
+			return nil, err
+		}
+		ret[patch] = sum
+	}
+	return ret, nil
+}
+
+func (m *matchSumDAO) SumOfPatch(
+	patch string, champion uint32, enemy int32,
+	tiers *apb.TierRange, region apb.Region, role apb.Role,
+) (*apb.MatchSum, error) {
+	// TODO(igm): cache
+	var filters []*apb.MatchFilters
+	for _, tier := range m.Vulgate.FindTiers(tiers) {
+		filters = append(filters, &apb.MatchFilters{
+			ChampionId: int32(champion),
+			EnemyId:    enemy,
+			Patch:      patch,
+			Tier:       tier,
+			Region:     region,
+			Role:       role,
+		})
+	}
+	return m.Sum(filters)
+}
+
+func (m *matchSumDAO) SumsOfRoles(
+	patch string, champion uint32, enemy int32,
+	tiers *apb.TierRange, region apb.Region,
+) (map[apb.Role]*apb.MatchSum, error) {
+	ret := map[apb.Role]*apb.MatchSum{}
+	for _, role := range []apb.Role{
+		apb.Role_TOP,
+		apb.Role_JUNGLE,
+		apb.Role_MID,
+		apb.Role_BOT,
+		apb.Role_SUPPORT,
+	} {
+		sum, err := m.SumOfPatch(patch, champion, enemy, tiers, region, role)
+		if err != nil {
+			return nil, err
+		}
+		ret[role] = sum
+	}
+	return ret, nil
+}
+
+func addManyMatchSums(sums ...*apb.MatchSum) *apb.MatchSum {
+	acc := sums[0]
+	for _, sum := range sums[1:] {
+		acc = addMatchSums(acc, sum)
+	}
+	return acc
 }
 
 func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {

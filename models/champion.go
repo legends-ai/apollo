@@ -6,11 +6,6 @@ import (
 	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
-const (
-	ANY_CHAMPION = -1
-	ANY_ENEMY    = -1
-)
-
 // ChampionDAO is a Champion DAO.
 type ChampionDAO interface {
 	// Get gets a champion.

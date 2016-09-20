@@ -26,147 +26,64 @@ type aggregatorImpl struct {
 
 // Aggregate aggregates.
 func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
-	// TODO(igm): optimize these calls. We have quite a few duplicates.
-	champions, err := a.findChampionQuotients(req)
+	champs, err := a.MatchSumDAO.SumsOfChampions(
+		req.Patch, req.Tier, req.Region, req.Role,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("error finding champion quotients: %v", err)
+		return nil, fmt.Errorf("error finding champion sums: %v", err)
 	}
 
-	roles, err := a.findRoleQuotients(req)
+	rolesSums, err := a.MatchSumDAO.SumsOfRoles(
+		req.Patch.Max, req.ChampionId, ANY_CHAMPION, req.Tier, req.Region,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("error finding role quotients: %v", err)
+		return nil, fmt.Errorf("error finding role sums: %v", err)
 	}
 
-	patches, err := a.findPatchQuotients(req)
-	if err != nil {
-		return nil, fmt.Errorf("error finding patch quotients: %v", err)
+	patches := map[string]map[uint32]*apb.MatchQuotient{}
+	for id, champPatches := range champs {
+		for patch, sum := range champPatches {
+			if patches[patch] == nil {
+				patches[patch] = map[uint32]*apb.MatchQuotient{}
+			}
+			patches[patch][id] = makeQuotient(sum)
+		}
+	}
+
+	champions := map[uint32]*apb.MatchQuotient{}
+	for _, id := range a.Vulgate.GetChampionIDs() {
+		sum := &apb.MatchSum{}
+		normalizeMatchSum(sum)
+		for _, patch := range a.Vulgate.FindPatches(req.Patch) {
+			// Use existing fetched patches
+			patchSum := champs[id][patch]
+
+			// Retrieve patch if it does not exist
+			if patchSum == nil {
+				patchSum, err = a.MatchSumDAO.SumOfPatch(
+					patch, req.ChampionId, ANY_CHAMPION, req.Tier, req.Region, req.Role,
+				)
+				if err != nil {
+					return nil, err
+				}
+				if patchSum == nil {
+					continue
+				}
+			}
+
+			// Append sum
+			sum = addMatchSums(sum, patchSum)
+		}
+		champions[id] = makeQuotient(sum)
+	}
+
+	roles := map[apb.Role]*apb.MatchQuotient{}
+	for role, sum := range rolesSums {
+		roles[role] = makeQuotient(sum)
 	}
 
 	// now let us build the match aggregate
 	return a.Deriver.Derive(req.Role, champions, roles, patches, req.ChampionId)
-}
-
-func (a *aggregatorImpl) findChampionQuotients(req *apb.GetChampionRequest) (map[uint32]*apb.MatchQuotient, error) {
-	champions := map[uint32]*apb.MatchQuotient{}
-	for _, id := range a.Vulgate.GetChampionIDs() {
-		copy := *req
-		copy.ChampionId = id
-		f := a.buildFilters(&copy)
-		champ, err := a.deriveQuotient(f)
-		if err != nil {
-			return nil, err
-		}
-
-		// no nil champs
-		if champ == nil {
-			continue
-		}
-
-		champions[id] = champ
-	}
-	return champions, nil
-}
-
-func (a *aggregatorImpl) findRoleQuotients(req *apb.GetChampionRequest) (map[apb.Role]*apb.MatchQuotient, error) {
-	roles := map[apb.Role]*apb.MatchQuotient{}
-
-	for _, role := range []apb.Role{
-		apb.Role_TOP,
-		apb.Role_JUNGLE,
-		apb.Role_MID,
-		apb.Role_BOT,
-		apb.Role_SUPPORT,
-	} {
-		copy := *req
-		copy.Role = role
-		f := a.buildFilters(&copy)
-		champ, err := a.deriveQuotient(f)
-		if err != nil {
-			return nil, err
-		}
-
-		// no nil champs
-		if champ == nil {
-			continue
-		}
-
-		roles[role] = champ
-	}
-
-	return roles, nil
-}
-
-func (a *aggregatorImpl) findPatchQuotients(
-	req *apb.GetChampionRequest,
-) (map[string]map[uint32]*apb.MatchQuotient, error) {
-	patches := map[string]map[uint32]*apb.MatchQuotient{}
-
-	// build patch filters
-	for _, patch := range a.Vulgate.FindNPreviousPatches(req.Patch, 5) {
-
-		// build champion filters
-		champions := map[uint32]*apb.MatchQuotient{}
-		for _, id := range a.Vulgate.GetChampionIDs() {
-
-			// Construct filters
-			var f []*apb.MatchFilters
-			for _, tier := range a.Vulgate.FindTiers(req.Tier) {
-				f = append(f, &apb.MatchFilters{
-					ChampionId: int32(id),
-					EnemyId:    ANY_ENEMY,
-					Patch:      patch,
-					Tier:       tier,
-					Region:     req.Region,
-					Role:       req.Role,
-				})
-			}
-
-			champ, err := a.deriveQuotient(f)
-			if err != nil {
-				return nil, err
-			}
-
-			// no nil champs
-			if champ == nil {
-				continue
-			}
-
-			champions[id] = champ
-		}
-
-		patches[patch] = champions
-	}
-
-	return patches, nil
-}
-
-// buildFilters builds a list of filters for a given champion.
-func (a *aggregatorImpl) buildFilters(req *apb.GetChampionRequest) []*apb.MatchFilters {
-	var ret []*apb.MatchFilters
-	for _, patch := range a.Vulgate.FindPatches(req.Patch) {
-		for _, tier := range a.Vulgate.FindTiers(req.Tier) {
-			ret = append(ret, &apb.MatchFilters{
-				ChampionId: int32(req.ChampionId),
-				EnemyId:    ANY_ENEMY,
-				Patch:      patch,
-				Tier:       tier,
-				Region:     req.Region,
-				Role:       req.Role,
-			})
-		}
-	}
-	return ret
-}
-
-func (a *aggregatorImpl) deriveQuotient(filters []*apb.MatchFilters) (*apb.MatchQuotient, error) {
-	sum, err := a.MatchSumDAO.Sum(filters)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching sum: %v", err)
-	}
-	if sum == nil {
-		return nil, nil
-	}
-	return makeQuotient(sum), nil
 }
 
 func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.MatchSum_Deltas_Delta {
