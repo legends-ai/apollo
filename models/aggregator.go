@@ -46,6 +46,9 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 			if patches[patch] == nil {
 				patches[patch] = map[uint32]*apb.MatchQuotient{}
 			}
+			if sum == nil {
+				continue
+			}
 			patches[patch][id] = makeQuotient(sum)
 		}
 	}
@@ -74,11 +77,17 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 			// Append sum
 			sum = addMatchSums(sum, patchSum)
 		}
+		if sum == nil {
+			continue
+		}
 		champions[id] = makeQuotient(sum)
 	}
 
 	roles := map[apb.Role]*apb.MatchQuotient{}
 	for role, sum := range rolesSums {
+		if sum == nil {
+			continue
+		}
 		roles[role] = makeQuotient(sum)
 	}
 
