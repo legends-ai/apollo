@@ -33,7 +33,8 @@ type MatchSumDAO interface {
 
 	// SumsOfChampions gets the sums of champions per patch.
 	SumsOfChampions(
-		patchRange *apb.PatchRange, tiers *apb.TierRange, region apb.Region, role apb.Role,
+		patchRange *apb.PatchRange, enemy int32,
+		tiers *apb.TierRange, region apb.Region, role apb.Role,
 	) (map[uint32]map[string]*apb.MatchSum, error)
 
 	// SumsOfPatches gets the sums of a champion for a range of patches.
@@ -114,11 +115,12 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 }
 
 func (m *matchSumDAO) SumsOfChampions(
-	patchRange *apb.PatchRange, tiers *apb.TierRange, region apb.Region, role apb.Role,
+	patchRange *apb.PatchRange, enemy int32,
+	tiers *apb.TierRange, region apb.Region, role apb.Role,
 ) (map[uint32]map[string]*apb.MatchSum, error) {
 	ret := map[uint32]map[string]*apb.MatchSum{}
 	for _, id := range m.Vulgate.GetChampionIDs() {
-		patches, err := m.SumsOfPatches(patchRange, id, ANY_CHAMPION, tiers, region, role)
+		patches, err := m.SumsOfPatches(patchRange, id, enemy, tiers, region, role)
 		if err != nil {
 			return nil, err
 		}

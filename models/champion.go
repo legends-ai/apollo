@@ -28,7 +28,8 @@ type championDAOImpl struct {
 
 // Get gets a champion.
 func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
-	agg, err := c.Aggregator.Aggregate(req)
+	agg, err := c.Aggregator.Aggregate(
+		req.ChampionId, -1, req.Patch, req.Tier, req.Region, req.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -48,5 +49,37 @@ func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) 
 }
 
 func (c *championDAOImpl) GetMatchup(ctx context.Context, req *apb.GetMatchupRequest) (*apb.Matchup, error) {
-	return &apb.Matchup{}, nil
+	focus, err := c.Aggregator.Aggregate(
+		req.FocusChampionId, int32(req.EnemyChampionId), req.Patch, req.Tier, req.Region, req.Role)
+	if err != nil {
+		return nil, err
+	}
+	enemy, err := c.Aggregator.Aggregate(
+		req.EnemyChampionId, int32(req.FocusChampionId), req.Patch, req.Tier, req.Region, req.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(igm): implement
+
+	patchTimes := c.Vulgate.GetPatchTimes(req.Patch)
+
+	return &apb.Matchup{
+		Focus: &apb.Champion{
+			Metadata: &apb.Champion_Metadata{
+				StaticInfo: c.Vulgate.GetChampionInfo(req.FocusChampionId),
+				PatchStart: patchTimes.Start,
+				PatchEnd:   patchTimes.End,
+			},
+			MatchAggregate: focus,
+		},
+		Enemy: &apb.Champion{
+			Metadata: &apb.Champion_Metadata{
+				StaticInfo: c.Vulgate.GetChampionInfo(req.EnemyChampionId),
+				PatchStart: patchTimes.Start,
+				PatchEnd:   patchTimes.End,
+			},
+			MatchAggregate: enemy,
+		},
+	}, nil
 }

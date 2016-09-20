@@ -9,7 +9,14 @@ import (
 // Aggregator fetches MatchSums and derives aggregates.
 type Aggregator interface {
 	// Aggregate aggregates.
-	Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error)
+	Aggregate(
+		championId uint32,
+		enemyChampionId int32,
+		patch *apb.PatchRange,
+		tier *apb.TierRange,
+		region apb.Region,
+		role apb.Role,
+	) (*apb.MatchAggregate, error)
 }
 
 // NewAggregator constructs a new Aggregator.
@@ -25,16 +32,23 @@ type aggregatorImpl struct {
 }
 
 // Aggregate aggregates.
-func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggregate, error) {
+func (a *aggregatorImpl) Aggregate(
+	aChampionId uint32,
+	enemyChampionId int32,
+	aPatch *apb.PatchRange,
+	aTier *apb.TierRange,
+	aRegion apb.Region,
+	aRole apb.Role,
+) (*apb.MatchAggregate, error) {
 	champs, err := a.MatchSumDAO.SumsOfChampions(
-		req.Patch, req.Tier, req.Region, req.Role,
+		aPatch, enemyChampionId, aTier, aRegion, aRole,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error finding champion sums: %v", err)
 	}
 
 	rolesSums, err := a.MatchSumDAO.SumsOfRoles(
-		req.Patch.Max, req.ChampionId, ANY_CHAMPION, req.Tier, req.Region,
+		aPatch.Max, aChampionId, enemyChampionId, aTier, aRegion,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error finding role sums: %v", err)
@@ -57,14 +71,14 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 	for _, id := range a.Vulgate.GetChampionIDs() {
 		sum := &apb.MatchSum{}
 		normalizeMatchSum(sum)
-		for _, patch := range a.Vulgate.FindPatches(req.Patch) {
+		for _, patch := range a.Vulgate.FindPatches(aPatch) {
 			// Use existing fetched patches
 			patchSum := champs[id][patch]
 
 			// Retrieve patch if it does not exist
 			if patchSum == nil {
 				patchSum, err = a.MatchSumDAO.SumOfPatch(
-					patch, req.ChampionId, ANY_CHAMPION, req.Tier, req.Region, req.Role,
+					patch, aChampionId, enemyChampionId, aTier, aRegion, aRole,
 				)
 				if err != nil {
 					return nil, err
@@ -92,7 +106,7 @@ func (a *aggregatorImpl) Aggregate(req *apb.GetChampionRequest) (*apb.MatchAggre
 	}
 
 	// now let us build the match aggregate
-	return a.Deriver.Derive(req.Role, champions, roles, patches, req.ChampionId)
+	return a.Deriver.Derive(aRole, champions, roles, patches, aChampionId)
 }
 
 func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.MatchSum_Deltas_Delta {
