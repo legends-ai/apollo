@@ -23,8 +23,8 @@ func (dao *MockChampionDAO) Get(ctx context.Context, req *apb.GetChampionRequest
 
 	return &apb.Champion{
 		Metadata: &apb.Champion_Metadata{
-			StaticInfo: &apb.Vulgate_Champion{
-				Base: &apb.Vulgate_Champion_Base{
+			StaticInfo: &apb.VChampion{
+				Base: &apb.VChampion_Base{
 					Id:    uint32(64),
 					Title: "The Blind Monk",
 					Name:  "Lee Sin",
