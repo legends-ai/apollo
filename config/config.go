@@ -11,7 +11,7 @@ type AppConfig struct {
 	Port       int      `required:"true" default:"4834"`
 	HealthPort int      `required:"true" default:"9834"`
 	DBHost     []string `default:"127.0.0.1"`
-	DBKeyspace string   `default:"athena"`
+	DBKeyspace string   `default:"athena_out"`
 }
 
 // Initialize initializes the configuration from env vars
