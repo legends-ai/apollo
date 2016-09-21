@@ -5,5 +5,4 @@ COPY . /go/src/github.com/asunaio/apollo
 WORKDIR /go/src/github.com/asunaio/apollo
 
 # Build binary
-RUN rm -f apollo
 RUN go build .
