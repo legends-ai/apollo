@@ -14,6 +14,8 @@ import (
 	"github.com/asunaio/apollo/lib"
 	"github.com/asunaio/apollo/server"
 
+	_ "net/http/pprof"
+
 	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
 
