@@ -46,9 +46,9 @@ func initServer(injector inject.Injector, logger *logrus.Logger, config *config.
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
-		healthPort := fmt.Sprintf(":%d", config.HealthPort)
-		logger.Infof("Health listening on %s", healthPort)
-		http.ListenAndServe(healthPort, nil)
+		monitorPort := fmt.Sprintf(":%d", config.MonitorPort)
+		logger.Infof("Monitor listening on %s", monitorPort)
+		http.ListenAndServe(monitorPort, nil)
 	}()
 
 	apb.RegisterApolloServer(s, serv)
