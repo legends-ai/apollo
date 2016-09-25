@@ -11,7 +11,7 @@ import (
 
 const (
 	stmtGetSum = `SELECT match_sum
-		FROM athena.match_sums
+		FROM athena_out.match_sums
 		WHERE
 			champion_id = ? AND enemy_id = ? AND patch = ? AND
 			tier = ? AND region = ? AND role = ?`
