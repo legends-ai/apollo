@@ -344,11 +344,24 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 		case 'R':
 			ret = append(ret, apb.Ability_R)
 		default:
-			return nil, fmt.Errorf("Unknown skill: %q", r)
+			return nil, fmt.Errorf("unknown skill: %q", r)
 		}
 	}
 	return ret, nil
 }
+
+func deserializeBuild(s string) ([]uint32, error) {
+	var ret []uint32
+	for _, el := range strings.Split(s, "|") {
+		eli, err := strconv.ParseUint(s, 10, 0)
+		if err != nil {
+			return nil, fmt.Errorf("unknown item: %q", el)
+		}
+		ret = append(ret, uint32(eli))
+	}
+	return ret, nil
+}
+
 func makeMatchAggregateGraphs(
 	champions map[uint32]*apb.MatchQuotient,
 	patches map[string]map[uint32]*apb.MatchQuotient, id uint32,
@@ -508,7 +521,53 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		})
 	}
 
-	// TODO(igm ^ pradyuman): builds
+	// derive starter items
+	var starterItems []*apb.MatchAggregateCollections_Build
+	for sis, sistats := range quot.StarterItems {
+		si, err := deserializeBuild(sis)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize starter items: %v", err)
+		}
+		// sistats is skill order subscalars
+		starterItems = append(starterItems, &apb.MatchAggregateCollections_Build{
+			Build:      si,
+			PickRate:   sistats.Plays,
+			WinRate:    sistats.Wins,
+			NumMatches: uint32(sistats.PlayCount),
+		})
+	}
+
+	// derive build path
+	var buildPath []*apb.MatchAggregateCollections_Build
+	for bps, bpstats := range quot.BuildPath {
+		bp, err := deserializeBuild(bps)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize build path: %v", err)
+		}
+		// bpstats is skill order subscalars
+		buildPath = append(buildPath, &apb.MatchAggregateCollections_Build{
+			Build:      bp,
+			PickRate:   bpstats.Plays,
+			WinRate:    bpstats.Wins,
+			NumMatches: uint32(bpstats.PlayCount),
+		})
+	}
+
+	// derive core build list
+	var coreBuildList []*apb.MatchAggregateCollections_Build
+	for cbs, cbstats := range quot.CoreBuildList {
+		cb, err := deserializeBuild(cbs)
+		if err != nil {
+			return nil, fmt.Errorf("could not deserialize build path: %v", err)
+		}
+		// cbstats is skill order subscalars
+		coreBuildList = append(coreBuildList, &apb.MatchAggregateCollections_Build{
+			Build:      cb,
+			PickRate:   cbstats.Plays,
+			WinRate:    cbstats.Wins,
+			NumMatches: uint32(cbstats.PlayCount),
+		})
+	}
 
 	return &apb.MatchAggregateCollections{
 		Runes:          runes,
@@ -517,6 +576,8 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		SummonerSpells: summonerSpells,
 		Trinkets:       trinkets,
 		SkillOrders:    skillOrders,
+		BuildPath:      buildPath,
+		CoreBuildList:  coreBuildList,
 	}, nil
 }
 
