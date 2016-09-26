@@ -19,6 +19,7 @@ func NewInjector() inject.Injector {
 	cfg := config.Initialize()
 	injector.Map(cfg)
 
+	logger.Infof("Creating Cassandra session on %v", cfg.DBHost)
 	cluster := gocql.NewCluster(cfg.DBHost...)
 	cluster.ProtoVersion = 3
 	cluster.Keyspace = cfg.DBKeyspace
