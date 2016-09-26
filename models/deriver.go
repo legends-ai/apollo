@@ -353,7 +353,7 @@ func deserializeSkillOrder(s string) ([]apb.Ability, error) {
 func deserializeBuild(s string) ([]uint32, error) {
 	var ret []uint32
 	for _, el := range strings.Split(s, "|") {
-		eli, err := strconv.ParseUint(s, 10, 0)
+		eli, err := strconv.ParseUint(el, 10, 0)
 		if err != nil {
 			return nil, fmt.Errorf("unknown item: %q", el)
 		}
