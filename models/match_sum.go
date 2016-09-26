@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/gocql/gocql"
 	"github.com/golang/protobuf/proto"
@@ -91,22 +92,35 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 	// Create aggregate sum
 	sum := (*apb.MatchSum)(nil)
 
+	var wg sync.WaitGroup
+	sums := make(chan *apb.MatchSum)
+
 	// Iterate over all filters
 	for _, filter := range filters {
-		// Error handling
-		s, err := a.Get(filter)
-		if err != nil {
-			return nil, err
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-		// Process sum
-		if s != nil {
-			normalizeMatchSum(s)
-			if sum == nil {
-				sum = s
-			} else {
-				sum = addMatchSums(sum, s)
+			s, err := a.Get(filter)
+			if err != nil {
+				return nil, err
 			}
+			sums <- s
+		}()
+	}
+
+	// Close when all are done
+	go func() {
+		wg.Wait()
+		close(sums)
+	}()
+
+	for s := range sums {
+		normalizeMatchSum(s)
+		if sum == nil {
+			sum = s
+		} else {
+			sum = addMatchSums(sum, s)
 		}
 	}
 
