@@ -27,3 +27,6 @@ docker-build:
 docker-push:
 	docker tag apollo:latest 096202052535.dkr.ecr.us-west-2.amazonaws.com/apollo:latest
 	docker push 096202052535.dkr.ecr.us-west-2.amazonaws.com/apollo:latest
+
+cassandratunnel:
+	ssh -fNL 9042:node-0.cassandra.mesos:9042 centos@52.42.186.11
