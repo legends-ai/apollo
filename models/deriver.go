@@ -576,6 +576,7 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 		SummonerSpells: summonerSpells,
 		Trinkets:       trinkets,
 		SkillOrders:    skillOrders,
+		StarterItems:   starterItems,
 		BuildPath:      buildPath,
 		CoreBuildList:  coreBuildList,
 	}, nil
