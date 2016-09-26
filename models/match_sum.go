@@ -95,6 +95,8 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 	var wg sync.WaitGroup
 	sums := make(chan *apb.MatchSum)
 
+	var fetchErr error
+
 	// Iterate over all filters
 	for _, filter := range filters {
 		wg.Add(1)
@@ -103,7 +105,8 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 
 			s, err := a.Get(filter)
 			if err != nil {
-				return nil, err
+				fetchErr = err
+				return
 			}
 			sums <- s
 		}()
@@ -122,6 +125,10 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 		} else {
 			sum = addMatchSums(sum, s)
 		}
+	}
+
+	if fetchErr != nil {
+		return nil, fetchErr
 	}
 
 	// Return sum and error
