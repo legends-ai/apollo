@@ -338,4 +338,10 @@ func normalizeMatchSum(p *apb.MatchSum) {
 	if p.Enemies == nil {
 		p.Enemies = map[uint32]*apb.MatchSum_Subscalars{}
 	}
+	if p.StarterItems == nil {
+		p.StarterItems = map[uint32]*apb.MatchSum_Subscalars{}
+	}
+	if p.BuildPath == nil {
+		p.BuildPath = map[uint32]*apb.MatchSum_Subscalars{}
+	}
 }
