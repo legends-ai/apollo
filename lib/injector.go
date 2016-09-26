@@ -19,7 +19,7 @@ func NewInjector() inject.Injector {
 	cfg := config.Initialize()
 	injector.Map(cfg)
 
-	logger.Infof("Creating Cassandra session on %v", cfg.DBHost)
+	logger.Infof("Creating Cassandra session on %v...", cfg.DBHost)
 	cluster := gocql.NewCluster(cfg.DBHost...)
 	cluster.ProtoVersion = 3
 	cluster.Keyspace = cfg.DBKeyspace
@@ -29,6 +29,7 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not connect to Cassandra: %v", err)
 	}
 	injector.Map(session)
+	logger.Infof("Connected to Cassandra")
 
 	// Vulgate
 	vulgate, err := models.NewVulgate()
