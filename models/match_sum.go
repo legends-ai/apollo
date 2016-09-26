@@ -108,6 +108,9 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 				fetchErr = err
 				return
 			}
+			if s == nil {
+				return
+			}
 			sums <- s
 		}()
 	}
