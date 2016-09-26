@@ -39,5 +39,8 @@ func (s *Server) GetMatchSum(ctx context.Context, in *apb.GetMatchSumRequest) (*
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "could not retrieve match sum: %v", err)
 	}
+	if sum == nil {
+		return nil, grpc.Errorf(codes.NotFound, "no match sum found for filter set")
+	}
 	return sum, nil
 }
