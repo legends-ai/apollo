@@ -100,7 +100,7 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 	// Iterate over all filters
 	for _, filter := range filters {
 		wg.Add(1)
-		go func() {
+		go func(filter *apb.MatchFilters) {
 			defer wg.Done()
 
 			s, err := a.Get(filter)
@@ -112,7 +112,7 @@ func (a *matchSumDAO) Sum(filters []*apb.MatchFilters) (*apb.MatchSum, error) {
 				return
 			}
 			sums <- s
-		}()
+		}(filter)
 	}
 
 	// Close when all are done
