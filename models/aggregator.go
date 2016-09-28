@@ -230,6 +230,7 @@ func makeQuotientDeltas(deltas *apb.MatchSum_Deltas_Delta, dd *apb.MatchSum_Dura
 	} else {
 		delta.ThirtyToEnd = float64(deltas.ThirtyToEnd) / float64(dd.ThirtyToEnd)
 	}
+	return delta
 }
 
 // makeQuotientSubscalars calculates subscalars
