@@ -180,6 +180,9 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 			Triplekills:              float64(scalars.Triplekills) / plays,
 			Quadrakills:              float64(scalars.Quadrakills) / plays,
 			Pentakills:               float64(scalars.Pentakills) / plays,
+			PhysicalDamage:           float64(scalars.PhysicalDamage) / plays,
+			MagicDamage:              float64(scalars.MagicDamage) / plays,
+			TrueDamage:               float64(scalars.TrueDamage) / plays,
 		},
 		Deltas: &apb.MatchQuotient_Deltas{
 			CsDiff:          makeQuotientDeltas(sum.Deltas.CsDiff, dd),
