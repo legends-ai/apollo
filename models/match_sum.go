@@ -242,6 +242,9 @@ func addMatchSums(a, b *apb.MatchSum) *apb.MatchSum {
 			Triplekills:              a.Scalars.Triplekills + b.Scalars.Triplekills,
 			Quadrakills:              a.Scalars.Quadrakills + b.Scalars.Quadrakills,
 			Pentakills:               a.Scalars.Pentakills + b.Scalars.Pentakills,
+			PhysicalDamage:           a.Scalars.PhysicalDamage + b.Scalars.PhysicalDamage,
+			MagicDamage:              a.Scalars.MagicDamage + b.Scalars.MagicDamage,
+			TrueDamage:               a.Scalars.TrueDamage + b.Scalars.TrueDamage,
 		},
 		Deltas: &apb.MatchSum_Deltas{
 			CsDiff:          addDelta(a.Deltas.CsDiff, b.Deltas.CsDiff),
