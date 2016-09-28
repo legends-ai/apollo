@@ -209,11 +209,26 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 
 // makeQuotientDeltas calculates deltas
 func makeQuotientDeltas(deltas *apb.MatchSum_Deltas_Delta, dd *apb.MatchSum_DurationDistribution) *apb.MatchQuotient_Deltas_Delta {
-	return &apb.MatchQuotient_Deltas_Delta{
-		ZeroToTen:      float64(deltas.ZeroToTen) / float64(dd.ZeroToTen),
-		TenToTwenty:    float64(deltas.TenToTwenty) / float64(dd.TenToTwenty),
-		TwentyToThirty: float64(deltas.TwentyToThirty) / float64(dd.TwentyToThirty),
-		ThirtyToEnd:    float64(deltas.ThirtyToEnd) / float64(dd.ThirtyToEnd),
+	delta := &apb.MatchQuotient_Deltas_Delta{}
+	if dd.ZeroToTen == 0 {
+		delta.ZeroToTen = 0
+	} else {
+		delta.ZeroToTen = float64(deltas.ZeroToTen) / float64(dd.ZeroToTen)
+	}
+	if dd.TenToTwenty == 0 {
+		delta.TenToTwenty = 0
+	} else {
+		delta.TenToTwenty = float64(deltas.TenToTwenty) / float64(dd.TenToTwenty)
+	}
+	if dd.TwentyToThirty == 0 {
+		delta.TwentyToThirty = 0
+	} else {
+		delta.TwentyToThirty = float64(deltas.TwentyToThirty) / float64(dd.TwentyToThirty)
+	}
+	if dd.ThirtyToEnd == 0 {
+		delta.ThirtyToEnd = 0
+	} else {
+		delta.ThirtyToEnd = float64(deltas.ThirtyToEnd) / float64(dd.ThirtyToEnd)
 	}
 }
 
