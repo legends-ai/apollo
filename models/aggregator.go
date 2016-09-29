@@ -156,6 +156,12 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 	plays := float64(scalars.Plays)
 	dd := sum.DurationDistribution
 
+	// Don't want to divide by zero
+	// (if plays is 0, the other scalars should be zero as well so all the scalars are now zero)
+	if plays == 0 {
+		plays = 1
+	}
+
 	return &apb.MatchQuotient{
 		Scalars: &apb.MatchQuotient_Scalars{
 			Plays:                    plays,

@@ -68,7 +68,8 @@ func (v *vulgateImpl) FindPatches(rg *apb.PatchRange) []string {
 	for i, patch := range v.proto.Patches {
 		if start == -1 && patch == rg.Min {
 			start = i
-		} else if end == -1 && patch == rg.Max {
+		}
+		if end == -1 && patch == rg.Max {
 			end = i + 1
 			break
 		}
