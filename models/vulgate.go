@@ -89,9 +89,8 @@ func (v *vulgateImpl) FindTiers(rg *apb.TierRange) []int32 {
 
 	var tiers []int32
 	for _, tier := range v.proto.Tiers {
-		v := parseTier(tier)
-		if rg.Min <= v && rg.Max >= v {
-			tiers = append(tiers, int32(v))
+		if t := parseTier(tier); rg.Min <= t && rg.Max >= t {
+			tiers = append(tiers, int32(t))
 		}
 	}
 
@@ -137,35 +136,27 @@ func (v *vulgateImpl) GetChampionIDs() []uint32 {
 }
 
 func (v *vulgateImpl) FindNPreviousPatches(rg *apb.PatchRange, n int) []string {
-	startIdx := -1
-	endIdx := -1
+	if rg == nil {
+		return []string{}
+	}
 
-	for i, p := range v.proto.Patches {
-		if p == rg.Min {
-			startIdx = i
+	var start, end int = -1, -1
+	for i, patch := range v.proto.Patches {
+		if start == -1 && patch == rg.Min {
+			start = i
 		}
-		if p == rg.Max {
-			endIdx = i
+		if end == -1 && patch == rg.Max {
+			end = i + 1
 			break
 		}
 	}
 
-	if endIdx < startIdx {
-		// wtf?
-		return []string{v.proto.Patches[len(v.proto.Patches)-1]}
+	if start == -1 || end == -1 {
+		return []string{}
 	}
 
-	start := endIdx - n
-	if startIdx == -1 || start < 0 {
-		start = 0
-	}
-	if startIdx < start {
-		start = startIdx
-	}
-
-	end := endIdx + 1
-	if endIdx == -1 {
-		end = len(v.proto.Patches) - 1
+	if end-start < n {
+		start = end - n
 	}
 
 	return v.proto.Patches[start:end]
