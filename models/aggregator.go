@@ -166,7 +166,7 @@ func makeQuotient(sum *apb.MatchSum) *apb.MatchQuotient {
 
 	return &apb.MatchQuotient{
 		Scalars: &apb.MatchQuotient_Scalars{
-			Plays:                    plays,
+			Plays:                    scalars.Plays,
 			Wins:                     float64(scalars.Wins) / plays,
 			GoldEarned:               float64(scalars.GoldEarned) / plays,
 			Kills:                    float64(scalars.Kills) / plays,

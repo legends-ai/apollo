@@ -122,7 +122,7 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 		// TODO(igm): optimize this
 		gs.scalars.pickRate = append(gs.scalars.pickRate, calculatePickRate(quots, cid))
 		gs.scalars.banRate = append(gs.scalars.banRate, calculateBanRate(quots, cid))
-		gs.scalars.gamesPlayed = append(gs.scalars.gamesPlayed, quot.Scalars.Plays)
+		gs.scalars.gamesPlayed = append(gs.scalars.gamesPlayed, float64(quot.Scalars.Plays))
 		gs.scalars.goldEarned = append(gs.scalars.goldEarned, quot.Scalars.GoldEarned)
 		gs.scalars.kills = append(gs.scalars.kills, quot.Scalars.Kills)
 		gs.scalars.deaths = append(gs.scalars.deaths, quot.Scalars.Deaths)
@@ -161,7 +161,7 @@ func makeMatchAggregateStatistics(quots map[uint32]*apb.MatchQuotient, id uint32
 			WinRate:                  deriveStatistic(gs.scalars.winRate, self.Scalars.Wins),
 			PickRate:                 deriveStatistic(gs.scalars.pickRate, selfPick),
 			BanRate:                  deriveStatistic(gs.scalars.pickRate, selfBan),
-			GamesPlayed:              deriveStatistic(gs.scalars.gamesPlayed, self.Scalars.Plays),
+			GamesPlayed:              deriveStatistic(gs.scalars.gamesPlayed, float64(self.Scalars.Plays)),
 			GoldEarned:               deriveStatistic(gs.scalars.goldEarned, self.Scalars.GoldEarned),
 			Kills:                    deriveStatistic(gs.scalars.kills, self.Scalars.Kills),
 			Deaths:                   deriveStatistic(gs.scalars.deaths, self.Scalars.Deaths),
@@ -211,14 +211,14 @@ func makeMatchAggregateRoles(
 
 	totalForChamp := 0.0
 	for _, roleQuotient := range roles {
-		totalForChamp += roleQuotient.Scalars.Plays
+		totalForChamp += float64(roleQuotient.Scalars.Plays)
 	}
 
 	var roleStats []*apb.MatchAggregateRoles_RoleStats
 	for role, roleQuotient := range roles {
 		roleStats = append(roleStats, &apb.MatchAggregateRoles_RoleStats{
 			Role:       role,
-			PickRate:   roleQuotient.Scalars.Plays / totalForChamp,
+			PickRate:   float64(roleQuotient.Scalars.Plays) / float64(totalForChamp),
 			NumMatches: uint32(roleQuotient.Scalars.Plays),
 		})
 	}
@@ -589,6 +589,7 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient, minPlayRate float64)
 			NumMatches: uint32(bpstats.PlayCount),
 		})
 	}
+	buildPath = groupBuildPaths(buildPath)
 
 	// derive core build list
 	var coreBuildList []*apb.MatchAggregateCollections_Build
@@ -627,7 +628,7 @@ func calculatePickRate(champions map[uint32]*apb.MatchQuotient, id uint32) float
 	var plays float64
 	var champPlays float64
 	for _, quot := range champions {
-		plays += quot.Scalars.Plays
+		plays += float64(quot.Scalars.Plays)
 		if allied := quot.Allies[id]; allied != nil {
 			champPlays += float64(allied.PlayCount)
 		}
@@ -643,10 +644,15 @@ func calculateBanRate(champions map[uint32]*apb.MatchQuotient, id uint32) float6
 	var bans float64
 	var champBans float64
 	for _, quot := range champions {
-		bans += quot.Scalars.Plays
+		bans += float64(quot.Scalars.Plays)
 		if banned := quot.Bans[id]; banned != nil {
 			champBans += float64(banned.PlayCount)
 		}
 	}
 	return champBans / bans
+}
+
+func groupBuildPaths(in []*apb.MatchAggregateCollections_Build) []*apb.MatchAggregateCollections_Build {
+	// TODO(igm)
+	return in
 }
