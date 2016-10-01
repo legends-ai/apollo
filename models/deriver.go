@@ -21,6 +21,7 @@ type Deriver interface {
 		roles map[apb.Role]*apb.MatchQuotient,
 		patches map[string]map[uint32]*apb.MatchQuotient,
 		id uint32,
+		minPlayRate float64,
 	) (*apb.MatchAggregate, error)
 }
 
@@ -37,13 +38,14 @@ func (d *deriverImpl) Derive(
 	roles map[apb.Role]*apb.MatchQuotient,
 	patches map[string]map[uint32]*apb.MatchQuotient,
 	id uint32,
+	minPlayRate float64,
 ) (*apb.MatchAggregate, error) {
 	// precondition -- champ must exist
 	if champions[id] == nil {
 		return nil, fmt.Errorf("champion %d does not exist in quotient map", id)
 	}
 
-	collections, err := makeMatchAggregateCollections(champions[id])
+	collections, err := makeMatchAggregateCollections(champions[id], minPlayRate)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing collections: %v", err)
 	}
@@ -422,10 +424,14 @@ func makeMatchAggregateGraphs(
 	}
 }
 
-func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregateCollections, error) {
+func makeMatchAggregateCollections(quot *apb.MatchQuotient, minPlayRate float64) (*apb.MatchAggregateCollections, error) {
 	// derive runes
 	var runes []*apb.MatchAggregateCollections_RuneSet
 	for rs, rstats := range quot.Runes {
+		if rstats.Plays < minPlayRate {
+			continue
+		}
+
 		// rs is rune set string
 		// rstats is rune set subscalars
 		runeSet, err := deserializeBonusSet(rs)
@@ -443,6 +449,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive masteries
 	var masteries []*apb.MatchAggregateCollections_MasterySet
 	for ms, mstats := range quot.Masteries {
+		if mstats.Plays < minPlayRate {
+			continue
+		}
+
 		// ms is mastery set string
 		// mstats is mastery set subscalars
 		masterySet, err := deserializeBonusSet(ms)
@@ -460,6 +470,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive keystones
 	var keystones []*apb.MatchAggregateCollections_Keystone
 	for ks, kstats := range quot.Keystones {
+		if kstats.Plays < minPlayRate {
+			continue
+		}
+
 		// ks is keystone string
 		// kstats is keystone subscalars
 		keystone, ct, err := deserializeBonusSetElement(ks)
@@ -481,6 +495,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive summoners
 	var summonerSpells []*apb.MatchAggregateCollections_SummonerSet
 	for ss, sstats := range quot.Summoners {
+		if sstats.Plays < minPlayRate {
+			continue
+		}
+
 		// ss is summoner string
 		// sstats is summoner subscalars
 		spell1, spell2, err := deserializeSummoners(ss)
@@ -499,6 +517,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive trinkets
 	var trinkets []*apb.MatchAggregateCollections_Trinket
 	for trinket, tstats := range quot.Trinkets {
+		if tstats.Plays < minPlayRate {
+			continue
+		}
+
 		// tstats is trinket subscalars
 		trinkets = append(trinkets, &apb.MatchAggregateCollections_Trinket{
 			Trinket:    trinket,
@@ -511,6 +533,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive skill orders
 	var skillOrders []*apb.MatchAggregateCollections_SkillOrder
 	for sos, sostats := range quot.SkillOrders {
+		if sostats.Plays < minPlayRate {
+			continue
+		}
+
 		so, err := deserializeSkillOrder(sos)
 		if err != nil {
 			return nil, fmt.Errorf("could not deserialize skill order: %v", err)
@@ -527,6 +553,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive starter items
 	var starterItems []*apb.MatchAggregateCollections_Build
 	for sis, sistats := range quot.StarterItems {
+		if sistats.Plays < minPlayRate {
+			continue
+		}
+
 		si, err := deserializeBuild(sis)
 		if err != nil {
 			return nil, fmt.Errorf("could not deserialize starter items: %v", err)
@@ -543,6 +573,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive build path
 	var buildPath []*apb.MatchAggregateCollections_Build
 	for bps, bpstats := range quot.BuildPath {
+		if bpstats.Plays < minPlayRate {
+			continue
+		}
+
 		bp, err := deserializeBuild(bps)
 		if err != nil {
 			return nil, fmt.Errorf("could not deserialize build path: %v", err)
@@ -559,6 +593,10 @@ func makeMatchAggregateCollections(quot *apb.MatchQuotient) (*apb.MatchAggregate
 	// derive core build list
 	var coreBuildList []*apb.MatchAggregateCollections_Build
 	for cbs, cbstats := range quot.CoreBuildList {
+		if cbstats.Plays < minPlayRate {
+			continue
+		}
+
 		cb, err := deserializeBuild(cbs)
 		if err != nil {
 			return nil, fmt.Errorf("could not deserialize build path: %v", err)

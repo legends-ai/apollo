@@ -16,6 +16,7 @@ type Aggregator interface {
 		tier *apb.TierRange,
 		region apb.Region,
 		role apb.Role,
+		minPlayRate float64,
 	) (*apb.MatchAggregate, error)
 }
 
@@ -39,6 +40,7 @@ func (a *aggregatorImpl) Aggregate(
 	aTier *apb.TierRange,
 	aRegion apb.Region,
 	aRole apb.Role,
+	minPlayRate float64,
 ) (*apb.MatchAggregate, error) {
 	champs, err := a.MatchSumDAO.SumsOfChampions(
 		aPatch, enemyChampionId, aTier, aRegion, aRole,
@@ -106,7 +108,7 @@ func (a *aggregatorImpl) Aggregate(
 	}
 
 	// now let us build the match aggregate
-	return a.Deriver.Derive(aRole, champions, roles, patches, aChampionId)
+	return a.Deriver.Derive(aRole, champions, roles, patches, aChampionId, minPlayRate)
 }
 
 func addDelta(a *apb.MatchSum_Deltas_Delta, b *apb.MatchSum_Deltas_Delta) *apb.MatchSum_Deltas_Delta {

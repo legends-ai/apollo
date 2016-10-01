@@ -29,7 +29,7 @@ type championDAOImpl struct {
 // Get gets a champion.
 func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) (*apb.Champion, error) {
 	agg, err := c.Aggregator.Aggregate(
-		req.ChampionId, -1, req.Patch, req.Tier, req.Region, req.Role)
+		req.ChampionId, -1, req.Patch, req.Tier, req.Region, req.Role, req.MinPlayRate)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +50,12 @@ func (c *championDAOImpl) Get(ctx context.Context, req *apb.GetChampionRequest) 
 
 func (c *championDAOImpl) GetMatchup(ctx context.Context, req *apb.GetMatchupRequest) (*apb.Matchup, error) {
 	focus, err := c.Aggregator.Aggregate(
-		req.FocusChampionId, int32(req.EnemyChampionId), req.Patch, req.Tier, req.Region, req.Role)
+		req.FocusChampionId, int32(req.EnemyChampionId), req.Patch, req.Tier, req.Region, req.Role, req.MinPlayRate)
 	if err != nil {
 		return nil, err
 	}
 	enemy, err := c.Aggregator.Aggregate(
-		req.EnemyChampionId, int32(req.FocusChampionId), req.Patch, req.Tier, req.Region, req.Role)
+		req.EnemyChampionId, int32(req.FocusChampionId), req.Patch, req.Tier, req.Region, req.Role, req.MinPlayRate)
 	if err != nil {
 		return nil, err
 	}
