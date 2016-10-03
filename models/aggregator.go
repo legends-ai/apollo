@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	apb "github.com/asunaio/apollo/gen-go/asuna"
 )
@@ -125,10 +126,7 @@ func addStringSubscalarsMap(
 ) map[string]*apb.MatchSum_Subscalars {
 	for i, bv := range b {
 		if av, exists := a[i]; exists {
-			a[i] = &apb.MatchSum_Subscalars{
-				Plays: av.Plays + bv.Plays,
-				Wins:  av.Wins + bv.Wins,
-			}
+			a[i] = addSubscalars(av, bv)
 		} else {
 			a[i] = bv
 		}
@@ -141,15 +139,19 @@ func addUint32SubscalarsMap(
 ) map[uint32]*apb.MatchSum_Subscalars {
 	for i, bv := range b {
 		if av, exists := a[i]; exists {
-			a[i] = &apb.MatchSum_Subscalars{
-				Plays: av.Plays + bv.Plays,
-				Wins:  av.Wins + bv.Wins,
-			}
+			a[i] = addSubscalars(av, bv)
 		} else {
 			a[i] = bv
 		}
 	}
 	return a
+}
+
+func addSubscalars(a, b *apb.MatchSum_Subscalars) *apb.MatchSum_Subscalars {
+	return &apb.MatchSum_Subscalars{
+		Plays: a.Plays + b.Plays,
+		Wins:  a.Wins + b.Wins,
+	}
 }
 
 // makeQuotient creates a MatchQuotient from a MatchSum.
@@ -254,7 +256,7 @@ func makeQuotientSubscalars(ss *apb.MatchSum_Subscalars, plays float64) *apb.Mat
 }
 
 func makeQuotientSubscalarStringMap(ss map[string]*apb.MatchSum_Subscalars, plays float64) map[string]*apb.MatchQuotient_Subscalars {
-	// TODO(igm): truncate lower values
+	ss = aggregateSumMapByPrefix(ss)
 	ret := map[string]*apb.MatchQuotient_Subscalars{}
 	for key, s := range ss {
 		ret[key] = makeQuotientSubscalars(s, plays)
@@ -263,10 +265,26 @@ func makeQuotientSubscalarStringMap(ss map[string]*apb.MatchSum_Subscalars, play
 }
 
 func makeQuotientSubscalarUint32Map(ss map[uint32]*apb.MatchSum_Subscalars, plays float64) map[uint32]*apb.MatchQuotient_Subscalars {
-	// TODO(igm): truncate lower values
 	ret := map[uint32]*apb.MatchQuotient_Subscalars{}
 	for key, s := range ss {
 		ret[key] = makeQuotientSubscalars(s, plays)
+	}
+	return ret
+}
+
+// aggregateSumMapByPrefix groups keys with the same prefix together. O(n^2) because im bad.
+func aggregateSumMapByPrefix(in map[string]*apb.MatchSum_Subscalars) map[string]*apb.MatchSum_Subscalars {
+	// TODO(igm): we can easily optimize this by using a trie. let's profile and see how fucked we are.
+	// fuck this
+	ret := map[string]*apb.MatchSum_Subscalars{}
+	for key, _ := range in {
+		cur := &apb.MatchSum_Subscalars{}
+		for key2, value2 := range in {
+			if strings.HasPrefix(key, key2) {
+				cur = addSubscalars(cur, value2)
+			}
+		}
+		ret[key] = cur
 	}
 	return ret
 }
