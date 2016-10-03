@@ -1,7 +1,7 @@
 all: clean build
 
 clean:
-	rm -f apollo:
+	rm -f apollo
 
 build: genproto
 	go build .
