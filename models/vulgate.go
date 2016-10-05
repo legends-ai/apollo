@@ -27,10 +27,10 @@ type Vulgate interface {
 	FindTiers(rg *apb.TierRange) []int32
 
 	// GetChampionInfo gets information about a champion.
-	GetChampionInfo(id uint32) *apb.VChampion
+	GetChampionInfo(id uint32) *apb.Vulgate_Champion
 
 	// GetPatchTimes gets times for a patch.
-	GetPatchTimes(rg *apb.PatchRange) *apb.VPatchTime
+	GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime
 
 	// GetChampionIDs gets a list of champion ids.
 	GetChampionIDs() []uint32
@@ -119,13 +119,13 @@ func parseTier(s string) uint32 {
 	}
 }
 
-func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.VChampion {
+func (v *vulgateImpl) GetChampionInfo(id uint32) *apb.Vulgate_Champion {
 	return v.proto.Champions[id]
 }
 
-func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.VPatchTime {
+func (v *vulgateImpl) GetPatchTimes(rg *apb.PatchRange) *apb.Vulgate_PatchTime {
 	// TODO(pradyuman): implement
-	return &apb.VPatchTime{}
+	return &apb.Vulgate_PatchTime{}
 }
 
 func (v *vulgateImpl) GetChampionIDs() []uint32 {
