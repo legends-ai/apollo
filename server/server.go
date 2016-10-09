@@ -1,6 +1,7 @@
 package server
 
 import (
+	ptypes "github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -43,4 +44,8 @@ func (s *Server) GetMatchSum(ctx context.Context, in *apb.GetMatchSumRequest) (*
 		return nil, grpc.Errorf(codes.NotFound, "no match sum found for filter set")
 	}
 	return sum, nil
+}
+
+func (s *Server) GetStatic(ctx context.Context, in *ptypes.Empty) (*apb.Static, error) {
+	return nil, grpc.Errorf(codes.Unimplemented, "GetStatic unimplemented")
 }
